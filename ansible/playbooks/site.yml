@@ -1,0 +1,48 @@
+---
+- name: Configure Proxmox Host
+  hosts: proxmox
+  become: yes
+  roles:
+    - proxmox-host
+
+- name: Configure Nginx Reverse Proxy
+  hosts: nginx
+  become: yes
+  roles:
+    - nginx
+
+- name: Configure OpenLDAP
+  hosts: openldap
+  become: yes
+  roles:
+    - openldap
+
+- name: Configure Authelia SSO
+  hosts: authelia
+  become: yes
+  roles:
+    - authelia
+
+- name: Configure Gitea
+  hosts: gitea
+  become: yes
+  roles:
+    - gitea
+
+- name: Configure Grafana
+  hosts: grafana
+  become: yes
+  roles:
+    - grafana
+
+- name: Configure Prometheus
+  hosts: prometheus
+  become: yes
+  roles:
+    - prometheus
+
+- name: Configure Security LXC
+  hosts: security
+  become: yes
+  roles:
+    - security

@@ -1,0 +1,60 @@
+# Secrets
+*.secret
+*.key
+*.pem
+*.crt
+*.p12
+.sops.yaml
+age.key
+*.age
+
+# Cloudflare
+cloudflared/
+*.json
+!configs/**/*.example.json
+
+# Ansible
+ansible/inventory/hosts.yml
+ansible/vault/
+*.vault.yml
+
+# Local overrides
+*.local.yml
+*.local.conf
+configs/*/production/
+configs/*/secrets/
+
+# OS/Editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
+
+# Terraform (if used)
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node
+node_modules/
+package-lock.json
+
+# Build artifacts
+dist/
+build/
+*.tar.gz
+*.zip
