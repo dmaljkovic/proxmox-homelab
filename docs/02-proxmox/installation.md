@@ -40,10 +40,10 @@ sync
    - *Will disable password auth after SSH key setup*
 7. **Network Configuration**
    - Interface: `eno1` (Ethernet)
-   - IP: `192.168.0.99/24` (static)
-   - Gateway: `192.168.0.1`
-   - DNS: `192.168.0.100` (Pi-hole) + `1.1.1.1` fallback
-   - Hostname: `proxmox.unseen-uni.xyz`
+   - IP: `10.0.0.100/24` (static)
+   - Gateway: `10.0.0.1`
+   - DNS: `10.0.0.100` (Pi-hole) + `1.1.1.1` fallback
+   - Hostname: `proxmox.example.com`
 8. **Confirm** → Install
 9. **Reboot** → Remove USB
 
@@ -51,16 +51,16 @@ sync
 
 ```bash
 # From your PC
-ssh root@192.168.0.99
+ssh root@10.0.0.100
 # Should prompt for password (first time)
 
 # Check network
 ip a show vmbr0
-# Should show 192.168.0.99/24 on vmbr0
+# Should show 10.0.0.100/24 on vmbr0
 
 # Check DNS
 cat /etc/resolv.conf
-# nameserver 192.168.0.100
+# nameserver 10.0.0.100
 # nameserver 1.1.1.1
 ```
 
@@ -73,10 +73,10 @@ cat /etc/resolv.conf
 ssh-keygen -t ed25519 -C "your@email.com"
 
 # Copy to Proxmox
-ssh-copy-id root@192.168.0.99
+ssh-copy-id root@10.0.0.100
 
 # Test key-only login
-ssh root@192.168.0.99
+ssh root@10.0.0.100
 ```
 
 ### 2. Harden SSH
@@ -105,8 +105,8 @@ systemctl reload sshd
 ```bash
 ufw default deny incoming
 ufw default allow outgoing
-ufw allow from 192.168.0.0/24 to any port 22 proto tcp
-ufw allow from 192.168.0.0/24 to any port 8006 proto tcp
+ufw allow from 10.0.0.0/24 to any port 22 proto tcp
+ufw allow from 10.0.0.0/24 to any port 8006 proto tcp
 ufw enable
 
 # Verify
@@ -169,12 +169,12 @@ systemctl list-units --type=service --state=running
 
 ## Verification Checklist
 
-- [ ] SSH key-only login works: `ssh root@192.168.0.99`
-- [ ] Proxmox GUI: `https://192.168.0.99:8006` (LAN only)
-- [ ] `ufw status` shows only 22/8006 from 192.168.0.0/24
+- [ ] SSH key-only login works: `ssh root@10.0.0.100`
+- [ ] Proxmox GUI: `https://10.0.0.100:8006` (LAN only)
+- [ ] `ufw status` shows only 22/8006 from 10.0.0.0/24
 - [ ] `systemctl status fail2ban` → active
 - [ ] `chronyc tracking` → synchronized
-- [ ] `ip a` shows vmbr0 with 192.168.0.99/24
+- [ ] `ip a` shows vmbr0 with 10.0.0.100/24
 - [ ] No password auth possible (test from another machine)
 
 ## Next Steps

@@ -7,9 +7,9 @@
 ufw default deny incoming
 ufw default allow outgoing
 
-# LAN management (192.168.0.0/24)
-ufw allow from 192.168.0.0/24 to any port 22 proto tcp    # SSH
-ufw allow from 192.168.0.0/24 to any port 8006 proto tcp  # Proxmox GUI
+# LAN management (10.0.0.0/24)
+ufw allow from 10.0.0.0/24 to any port 22 proto tcp    # SSH
+ufw allow from 10.0.0.0/24 to any port 8006 proto tcp  # Proxmox GUI
 
 # Cloudflare Tunnel (outbound only)
 ufw allow out 443 proto tcp  # cloudflared to Cloudflare
@@ -28,8 +28,8 @@ Status: active
 
      To                         Action      From
      --                         ------      ----
-[ 1] 22/tcp                     ALLOW IN    192.168.0.0/24
-[ 2] 8006/tcp                   ALLOW IN    192.168.0.0/24
+[ 1] 22/tcp                     ALLOW IN    10.0.0.0/24
+[ 2] 8006/tcp                   ALLOW IN    10.0.0.0/24
 [ 3] 443/tcp                    ALLOW OUT   Anywhere
 [ 4] 53/udp                     ALLOW OUT   Anywhere
 ```
@@ -49,7 +49,7 @@ Status: active
 
 ## LXC-Level Firewall (iptables/nftables)
 
-Each LXC should run its own firewall. Example for Gitea (192.168.0.40):
+Each LXC should run its own firewall. Example for Gitea (10.0.0.40):
 
 ```bash
 # On Gitea LXC
@@ -58,8 +58,8 @@ apt install -y iptables-persistent
 # Allow only from Nginx and Prometheus
 iptables -A INPUT -i lo -j ACCEPT
 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-iptables -A INPUT -s 192.168.0.10 -p tcp --dport 3000 -j ACCEPT  # Nginx
-iptables -A INPUT -s 192.168.0.60 -p tcp --dport 3000 -j ACCEPT  # Prometheus
+iptables -A INPUT -s 10.0.0.10 -p tcp --dport 3000 -j ACCEPT  # Nginx
+iptables -A INPUT -s 10.0.0.60 -p tcp --dport 3000 -j ACCEPT  # Prometheus
 iptables -A INPUT -p tcp --dport 22 -j ACCEPT  # SSH from LAN (optional)
 iptables -A INPUT -j DROP
 
@@ -107,14 +107,14 @@ backend = systemd
 
 ```bash
 # Test from LAN (should work)
-ssh root@192.168.0.99
-curl https://192.168.0.99:8006
+ssh root@10.0.0.100
+curl https://10.0.0.100:8006
 
 # Test from internet (should fail)
 # nmap -p 22,80,443,8006 <public-ip>
 # All ports should be filtered/closed
 
 # Test Cloudflare tunnel
-curl -I https://git.unseen-uni.xyz
+curl -I https://git.example.com
 # Should work via tunnel
 ```

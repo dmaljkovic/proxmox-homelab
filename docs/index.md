@@ -37,12 +37,12 @@ A lightweight, security-focused homelab running on a Lenovo Y520 laptop with 16 
 graph TB
     User[Internet User] --> CF[Cloudflare Edge]
     CF --> Tunnel[Cloudflare Tunnel]
-    Tunnel --> Nginx[Nginx LXC 101<br/>192.168.0.10]
-    Nginx -.->|auth_request| Authelia[Authelia LXC 103<br/>192.168.0.30]
-    Authelia -.->|LDAPS| LDAP[OpenLDAP LXC 102<br/>192.168.0.20]
-    Nginx --> Gitea[Gitea LXC 104<br/>192.168.0.40]
-    Nginx --> Grafana[Grafana LXC 105<br/>192.168.0.50]
-    Prom[Prometheus LXC 106<br/>192.168.0.60] -.->|scrape| Nginx
+    Tunnel --> Nginx[Nginx LXC 101<br/>10.0.0.10]
+    Nginx -.->|auth_request| Authelia[Authelia LXC 103<br/>10.0.0.30]
+    Authelia -.->|LDAPS| LDAP[OpenLDAP LXC 102<br/>10.0.0.20]
+    Nginx --> Gitea[Gitea LXC 104<br/>10.0.0.40]
+    Nginx --> Grafana[Grafana LXC 105<br/>10.0.0.50]
+    Prom[Prometheus LXC 106<br/>10.0.0.60] -.->|scrape| Nginx
     Prom -.->|scrape| Gitea
     Prom -.->|scrape| Grafana
     Prom -.->|scrape| Authelia

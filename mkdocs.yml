@@ -1,7 +1,7 @@
 site_name: Proxmox Homelab
-site_url: https://dmaljkovic.github.io/proxmox-homelab/
-repo_url: https://github.com/dmaljkovic/proxmox-homelab
-repo_name: dmaljkovic/proxmox-homelab
+site_url: https://yourusername.github.io/proxmox-homelab/
+repo_url: https://github.com/yourusername/proxmox-homelab
+repo_name: yourusername/proxmox-homelab
 theme:
   name: material
   palette:

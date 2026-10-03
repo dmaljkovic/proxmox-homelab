@@ -5,15 +5,15 @@
 Since the ISP uses CG-NAT (no public IPv4), we use Cloudflare Tunnel for secure, zero-trust access to internal services.
 
 ```
-Internet -> Cloudflare Edge -> Tunnel (QUIC/443) -> cloudflared (Proxmox host) -> Nginx (192.168.0.10:80)
+Internet -> Cloudflare Edge -> Tunnel (QUIC/443) -> cloudflared (Proxmox host) -> Nginx (10.0.0.10:80)
 ```
 
 ## Prerequisites
 
-- Cloudflare account with `unseen-uni.xyz` zone
+- Cloudflare account with `example.com` zone
 - Domain already on Cloudflare (nameservers pointing to Cloudflare)
-- Proxmox host at `192.168.0.99` with outbound internet access
-- Nginx LXC planned at `192.168.0.10:80`
+- Proxmox host at `10.0.0.100` with outbound internet access
+- Nginx LXC planned at `10.0.0.10:80`
 
 ## Step 1: Install cloudflared on Your PC
 
@@ -35,7 +35,7 @@ cloudflared --version
 cloudflared tunnel login
 ```
 
-- Browser opens -> select `unseen-uni.xyz` -> Authorize
+- Browser opens -> select `example.com` -> Authorize
 - Creates `~/.cloudflared/cert.pem`
 
 ## Step 3: Create Tunnel
@@ -59,16 +59,16 @@ tunnel: <TUNNEL_ID>
 credentials-file: /home/user/.cloudflared/<TUNNEL_ID>.json
 
 ingress:
-  - hostname: git.unseen-uni.xyz
-    service: http://192.168.0.10:80
+  - hostname: git.example.com
+    service: http://10.0.0.10:80
     originRequest:
       noTLSVerify: true
-  - hostname: grafana.unseen-uni.xyz
-    service: http://192.168.0.10:80
+  - hostname: grafana.example.com
+    service: http://10.0.0.10:80
     originRequest:
       noTLSVerify: true
-  - hostname: auth.unseen-uni.xyz
-    service: http://192.168.0.10:80
+  - hostname: auth.example.com
+    service: http://10.0.0.10:80
     originRequest:
       noTLSVerify: true
   - service: http_status:404
@@ -78,15 +78,15 @@ EOF
 ## Step 5: Create DNS Records
 
 ```bash
-cloudflared tunnel route dns proxmox-homelab git.unseen-uni.xyz
-cloudflared tunnel route dns proxmox-homelab grafana.unseen-uni.xyz
-cloudflared tunnel route dns proxmox-homelab auth.unseen-uni.xyz
+cloudflared tunnel route dns proxmox-homelab git.example.com
+cloudflared tunnel route dns proxmox-homelab grafana.example.com
+cloudflared tunnel route dns proxmox-homelab auth.example.com
 ```
 
 This creates CNAME records:
-- `git.unseen-uni.xyz` -> `<TUNNEL_ID>.cfargotunnel.com`
-- `grafana.unseen-uni.xyz` -> `<TUNNEL_ID>.cfargotunnel.com`
-- `auth.unseen-uni.xyz` -> `<TUNNEL_ID>.cfargotunnel.com`
+- `git.example.com` -> `<TUNNEL_ID>.cfargotunnel.com`
+- `grafana.example.com` -> `<TUNNEL_ID>.cfargotunnel.com`
+- `auth.example.com` -> `<TUNNEL_ID>.cfargotunnel.com`
 
 ## Step 6: Test Tunnel Locally (Optional)
 
@@ -95,7 +95,7 @@ This creates CNAME records:
 cloudflared tunnel run proxmox-homelab
 
 # In another terminal
-curl -H "Host: git.unseen-uni.xyz" http://192.168.0.10:80
+curl -H "Host: git.example.com" http://10.0.0.10:80
 # Should get 404 (Nginx not configured yet) or 502 (Nginx not running)
 ```
 
@@ -107,8 +107,8 @@ apt update && apt install -y cloudflared
 
 # Copy credentials and config
 mkdir -p /etc/cloudflared
-scp ~/.cloudflared/<TUNNEL_ID>.json root@192.168.0.99:/etc/cloudflared/
-scp ~/.cloudflared/config.yml root@192.168.0.99:/etc/cloudflared/
+scp ~/.cloudflared/<TUNNEL_ID>.json root@10.0.0.100:/etc/cloudflared/
+scp ~/.cloudflared/config.yml root@10.0.0.100:/etc/cloudflared/
 
 # Install as systemd service
 cloudflared service install
@@ -133,11 +133,11 @@ journalctl -u cloudflared -f
 
 ```bash
 # From your PC (outside network)
-curl -I https://git.unseen-uni.xyz
+curl -I https://git.example.com
 # Should return HTTP headers (even if 404/502 - Nginx not ready yet)
 
 # Check DNS
-dig git.unseen-uni.xyz +short
+dig git.example.com +short
 # Should return Cloudflare IPs
 ```
 
@@ -173,10 +173,10 @@ journalctl -u cloudflared -n 50
 
 ### 502 Bad Gateway
 ```bash
-# Check Nginx is running on 192.168.0.10:80
-ssh root@192.168.0.99
-ssh root@192.168.0.10 "systemctl status nginx"
-curl http://192.168.0.10:80
+# Check Nginx is running on 10.0.0.10:80
+ssh root@10.0.0.100
+ssh root@10.0.0.10 "systemctl status nginx"
+curl http://10.0.0.10:80
 ```
 
 ### DNS Not Resolving

@@ -13,24 +13,24 @@ graph TB
         Tunnel[Cloudflare Tunnel]
     end
     
-    subgraph "Home LAN (192.168.0.0/24)"
-        Router[Home Router<br/>192.168.0.1]
-        DNS[Local DNS<br/>192.168.0.100]
+    subgraph "Home LAN (10.0.0.0/24)"
+        Router[Home Router<br/>10.0.0.1]
+        DNS[Local DNS<br/>10.0.0.100]
         
         subgraph "Proxmox Host"
-            Host[Proxmox VE<br/>192.168.0.99]
+            Host[Proxmox VE<br/>10.0.0.100]
             CF[cloudflared]
             vmbr0[vmbr0 Bridge]
         end
         
         subgraph "LXC Containers (vmbr0)"
-            Nginx[Nginx<br/>192.168.0.10]
-            LDAP[OpenLDAP<br/>192.168.0.20]
-            Authelia[Authelia<br/>192.168.0.30]
-            Gitea[Gitea<br/>192.168.0.40]
-            Grafana[Grafana<br/>192.168.0.50]
-            Prom[Prometheus<br/>192.168.0.60]
-            Sec[Security<br/>192.168.0.70]
+            Nginx[Nginx<br/>10.0.0.10]
+            LDAP[OpenLDAP<br/>10.0.0.20]
+            Authelia[Authelia<br/>10.0.0.30]
+            Gitea[Gitea<br/>10.0.0.40]
+            Grafana[Grafana<br/>10.0.0.50]
+            Prom[Prometheus<br/>10.0.0.60]
+            Sec[Security<br/>10.0.0.70]
         end
     end
     
@@ -54,16 +54,16 @@ graph TB
 
 | Device | IP | MAC | Notes |
 |--------|-----|-----|-------|
-| Home Router | 192.168.0.1 | - | Gateway, DHCP server |
-| Local DNS (Pi-hole) | 192.168.0.100 | - | Internal DNS |
-| Proxmox Host | 192.168.0.99 | `aa:bb:cc:dd:ee:ff` | Static / DHCP reservation |
-| Nginx (LXC 101) | 192.168.0.10 | `aa:bb:cc:dd:ee:01` | Static |
-| OpenLDAP (LXC 102) | 192.168.0.20 | `aa:bb:cc:dd:ee:02` | Static |
-| Authelia (LXC 103) | 192.168.0.30 | `aa:bb:cc:dd:ee:03` | Static |
-| Gitea (LXC 104) | 192.168.0.40 | `aa:bb:cc:dd:ee:04` | Static |
-| Grafana (LXC 105) | 192.168.0.50 | `aa:bb:cc:dd:ee:05` | Static |
-| Prometheus (LXC 106) | 192.168.0.60 | `aa:bb:cc:dd:ee:06` | Static |
-| Security (LXC 107) | 192.168.0.70 | `aa:bb:cc:dd:ee:07` | Static |
+| Home Router | 10.0.0.1 | - | Gateway, DHCP server |
+| Local DNS (Pi-hole) | 10.0.0.100 | - | Internal DNS |
+| Proxmox Host | 10.0.0.100 | `aa:bb:cc:dd:ee:ff` | Static / DHCP reservation |
+| Nginx (LXC 101) | 10.0.0.10 | `aa:bb:cc:dd:ee:01` | Static |
+| OpenLDAP (LXC 102) | 10.0.0.20 | `aa:bb:cc:dd:ee:02` | Static |
+| Authelia (LXC 103) | 10.0.0.30 | `aa:bb:cc:dd:ee:03` | Static |
+| Gitea (LXC 104) | 10.0.0.40 | `aa:bb:cc:dd:ee:04` | Static |
+| Grafana (LXC 105) | 10.0.0.50 | `aa:bb:cc:dd:ee:05` | Static |
+| Prometheus (LXC 106) | 10.0.0.60 | `aa:bb:cc:dd:ee:06` | Static |
+| Security (LXC 107) | 10.0.0.70 | `aa:bb:cc:dd:ee:07` | Static |
 
 ## Proxmox Network Config (`/etc/network/interfaces`)
 
@@ -76,31 +76,31 @@ iface eno1 inet manual
 
 auto vmbr0
 iface vmbr0 inet static
-    address 192.168.0.99/24
-    gateway 192.168.0.1
+    address 10.0.0.100/24
+    gateway 10.0.0.1
     bridge-ports eno1
     bridge-stp off
     bridge-fd 0
     # DNS via local Pi-hole
-    dns-nameservers 192.168.0.100 1.1.1.1
-    dns-search unseen-uni.xyz
+    dns-nameservers 10.0.0.100 1.1.1.1
+    dns-search example.com
 ```
 
 ## LXC Network Config (each container)
 
 ```bash
 # /etc/pve/lxc/101.conf (example)
-net0: name=eth0,bridge=vmbr0,ip=192.168.0.10/24,gw=192.168.0.1,hwaddr=aa:bb:cc:dd:ee:01
+net0: name=eth0,bridge=vmbr0,ip=10.0.0.10/24,gw=10.0.0.1,hwaddr=aa:bb:cc:dd:ee:01
 ```
 
 ## Cloudflare Tunnel Network Flow
 
 ```
-1. User → git.unseen-uni.xyz (DNS → Cloudflare IPs)
+1. User → git.example.com (DNS → Cloudflare IPs)
 2. Cloudflare Edge (Anycast) → TLS termination, WAF
 3. Cloudflare Tunnel (QUIC/443) → Encrypted to cloudflared
 4. cloudflared (on Proxmox host, outbound only)
-5. cloudflared → Local HTTP (192.168.0.10:80)
+5. cloudflared → Local HTTP (10.0.0.10:80)
 6. Nginx → Application
 ```
 
@@ -112,8 +112,8 @@ ufw default deny incoming
 ufw default allow outgoing
 
 # LAN management
-ufw allow from 192.168.0.0/24 to any port 22 proto tcp    # SSH
-ufw allow from 192.168.0.0/24 to any port 8006 proto tcp  # Proxmox GUI
+ufw allow from 10.0.0.0/24 to any port 22 proto tcp    # SSH
+ufw allow from 10.0.0.0/24 to any port 8006 proto tcp  # Proxmox GUI
 
 # Cloudflare Tunnel (outbound only)
 ufw allow out 443 proto tcp  # cloudflared to Cloudflare
@@ -138,7 +138,7 @@ ufw allow out 443 proto tcp  # cloudflared to Cloudflare
 
 | Name | Type | Target | Proxy |
 |------|------|--------|-------|
-| proxmox | A | 192.168.0.99 | DNS Only (grey) |
+| proxmox | A | 10.0.0.100 | DNS Only (grey) |
 | git | CNAME | `<tunnel-id>.cfargotunnel.com` | Proxied (orange) |
 | grafana | CNAME | `<tunnel-id>.cfargotunnel.com` | Proxied (orange) |
 | auth | CNAME | `<tunnel-id>.cfargotunnel.com` | Proxied (orange) |
