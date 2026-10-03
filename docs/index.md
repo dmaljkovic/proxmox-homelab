@@ -38,15 +38,15 @@ graph TB
     User[Internet User] --> CF[Cloudflare Edge]
     CF --> Tunnel[Cloudflare Tunnel]
     Tunnel --> Nginx[Nginx LXC 101<br/>192.168.0.10]
-    Nginx -->|auth_request| Authelia[Authelia LXC 103<br/>192.168.0.30]
-    Authelia --> LDAP[OpenLDAP LXC 102<br/>192.168.0.20]
+    Nginx -.->|auth_request| Authelia[Authelia LXC 103<br/>192.168.0.30]
+    Authelia -.->|LDAPS| LDAP[OpenLDAP LXC 102<br/>192.168.0.20]
     Nginx --> Gitea[Gitea LXC 104<br/>192.168.0.40]
     Nginx --> Grafana[Grafana LXC 105<br/>192.168.0.50]
-    Prometheus[Prometheus LXC 106<br/>192.168.0.60] -->|scrape| Nginx
-    Prometheus -->|scrape| Gitea
-    Prometheus -->|scrape| Grafana
-    Prometheus -->|scrape| Authelia
-    Prometheus -->|scrape| LDAP
+    Prom[Prometheus LXC 106<br/>192.168.0.60] -.->|scrape| Nginx
+    Prom -.->|scrape| Gitea
+    Prom -.->|scrape| Grafana
+    Prom -.->|scrape| Authelia
+    Prom -.->|scrape| LDAP
 ```
 
 ## Repository Structure
@@ -72,7 +72,3 @@ See [Proxmox Installation](02-proxmox/installation.md) for initial setup.
 - All web traffic via Nginx + Authelia SSO
 - Internal services isolated on vmbr0
 - Secrets encrypted with SOPS/age
-
-## License
-
-MIT License - see [LICENSE](../LICENSE)
