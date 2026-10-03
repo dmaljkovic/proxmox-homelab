@@ -81,3 +81,4 @@ nav:
       - Strategy: 09-backups/strategy.md
       - Disaster Recovery: 09-backups/disaster-recovery.md
   - Lessons Learned: 10-lessons-learned.md
+  - License: license.md
