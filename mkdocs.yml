@@ -18,6 +18,23 @@ theme:
     - toc.integrate
     - search.suggest
     - content.code.copy
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js
+  - javascripts/mermaid.js
 nav:
   - Home: index.md
   - Architecture:
@@ -57,13 +74,3 @@ nav:
       - Strategy: 09-backups/strategy.md
       - Disaster Recovery: 09-backups/disaster-recovery.md
   - Lessons Learned: 10-lessons-learned.md
-markdown_extensions:
-  - pymdownx.highlight:
-      anchor_linenums: true
-  - pymdownx.superfences
-  - pymdownx.tabbed:
-      alternate_style: true
-  - admonition
-  - pymdownx.details
-  - attr_list
-  - md_in_html
