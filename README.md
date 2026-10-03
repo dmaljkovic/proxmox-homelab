@@ -122,4 +122,4 @@ MIT License — see [LICENSE](LICENSE)
 
 ## Author
 
-**Darko Maljković** — [GitHub](https://github.com/dmaljkovic)
+**Maljkovic** — [GitHub](https://github.com/dmaljkovic)
