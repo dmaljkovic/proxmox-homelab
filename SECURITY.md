@@ -11,7 +11,7 @@
 If you discover a security vulnerability in this homelab configuration, please report it by:
 
 1. **Do not create a public issue**
-2. Email: security@unseen-uni.xyz (or create a private GitHub Security Advisory)
+2. Email: security@example.com (or create a private GitHub Security Advisory)
 3. Include:
    - Description of the vulnerability
    - Steps to reproduce
@@ -25,7 +25,7 @@ If you discover a security vulnerability in this homelab configuration, please r
 - **Cloudflare Edge**: TLS termination, WAF, DDoS protection
 - **Cloudflare Tunnel**: Encrypted outbound-only connection
 - **Proxmox Host**: Management only (SSH/GUI from LAN)
-- **vmbr0 (192.168.0.0/24)**: Internal service network
+- **vmbr0 (10.0.0.0/24)**: Internal service network
 - **LXC Containers**: Isolated services with minimal exposure
 
 ### Defense in Depth
@@ -89,4 +89,4 @@ This is a personal homelab project demonstrating security practices. Not certifi
 
 ## Contact
 
-Security issues: Create a GitHub Security Advisory or email security@unseen-uni.xyz
+Security issues: Create a GitHub Security Advisory or email security@example.com

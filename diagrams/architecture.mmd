@@ -8,18 +8,18 @@ graph TB
         Tunnel[Cloudflare Tunnel<br/>QUIC/443]
     end
     
-    subgraph "Lenovo Y520 (192.168.0.0/24)"
-        Host[Proxmox VE Host<br/>192.168.0.99]
+    subgraph "Lenovo Y520 (10.0.0.0/24)"
+        Host[Proxmox VE Host<br/>10.0.0.100]
         CF[cloudflared<br/>on Host]
         
         subgraph "vmbr0 Bridge"
-            Nginx[Nginx LXC 101<br/>192.168.0.10:80]
-            LDAP[OpenLDAP LXC 102<br/>192.168.0.20:636]
-            Authelia[Authelia LXC 103<br/>192.168.0.30:9091]
-            Gitea[Gitea LXC 104<br/>192.168.0.40:3000]
-            Grafana[Grafana LXC 105<br/>192.168.0.50:3000]
-            Prom[Prometheus LXC 106<br/>192.168.0.60:9090]
-            Sec[Security LXC 107<br/>192.168.0.70]
+            Nginx[Nginx LXC 101<br/>10.0.0.10:80]
+            LDAP[OpenLDAP LXC 102<br/>10.0.0.20:636]
+            Authelia[Authelia LXC 103<br/>10.0.0.30:9091]
+            Gitea[Gitea LXC 104<br/>10.0.0.40:3000]
+            Grafana[Grafana LXC 105<br/>10.0.0.50:3000]
+            Prom[Prometheus LXC 106<br/>10.0.0.60:9090]
+            Sec[Security LXC 107<br/>10.0.0.70]
         end
     end
     

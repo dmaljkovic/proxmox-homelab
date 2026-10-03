@@ -11,17 +11,17 @@
 ## Architecture
 
 ```
-Cloudflare -> cloudflared -> Nginx (192.168.0.10:80)
+Cloudflare -> cloudflared -> Nginx (10.0.0.10:80)
     |
-    |-- git.unseen-uni.xyz -> auth_request -> Authelia -> proxy_pass -> Gitea (192.168.0.40:3000)
-    |-- grafana.unseen-uni.xyz -> auth_request -> Authelia -> proxy_pass -> Grafana (192.168.0.50:3000)
-    |-- auth.unseen-uni.xyz -> proxy_pass -> Authelia portal (192.168.0.30:9091)
+    |-- git.example.com -> auth_request -> Authelia -> proxy_pass -> Gitea (10.0.0.40:3000)
+    |-- grafana.example.com -> auth_request -> Authelia -> proxy_pass -> Grafana (10.0.0.50:3000)
+    |-- auth.example.com -> proxy_pass -> Authelia portal (10.0.0.30:9091)
 ```
 
 ## Installation (LXC 101)
 
 ```bash
-# On Proxmox: create Debian 12 LXC (101), 256 MB RAM, 4 GB disk, static IP 192.168.0.10
+# On Proxmox: create Debian 12 LXC (101), 256 MB RAM, 4 GB disk, static IP 10.0.0.10
 
 # Inside LXC 101
 apt update && apt install -y nginx
@@ -95,12 +95,12 @@ http {
 }
 ```
 
-## Site: git.unseen-uni.xyz (`/etc/nginx/sites-available/git.unseen-uni.xyz`)
+## Site: git.example.com (`/etc/nginx/sites-available/git.example.com`)
 
 ```nginx
 server {
     listen 80;
-    server_name git.unseen-uni.xyz;
+    server_name git.example.com;
 
     # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
@@ -116,7 +116,7 @@ server {
         auth_request_set $groups $upstream_http_remote_groups;
         auth_request_set $email $upstream_http_remote_email;
 
-        proxy_pass http://192.168.0.40:3000;
+        proxy_pass http://10.0.0.40:3000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -136,7 +136,7 @@ server {
     # Internal auth endpoint
     location = /auth {
         internal;
-        proxy_pass http://192.168.0.30:9091/api/verify;
+        proxy_pass http://10.0.0.30:9091/api/verify;
         proxy_pass_request_body off;
         proxy_set_header Content-Length "";
         proxy_set_header X-Original-URL $scheme://$host$request_uri;
@@ -154,12 +154,12 @@ server {
 }
 ```
 
-## Site: grafana.unseen-uni.xyz (`/etc/nginx/sites-available/grafana.unseen-uni.xyz`)
+## Site: grafana.example.com (`/etc/nginx/sites-available/grafana.example.com`)
 
 ```nginx
 server {
     listen 80;
-    server_name grafana.unseen-uni.xyz;
+    server_name grafana.example.com;
 
     # Security headers (same as git)
     add_header X-Frame-Options "SAMEORIGIN" always;
@@ -173,7 +173,7 @@ server {
         auth_request_set $groups $upstream_http_remote_groups;
         auth_request_set $email $upstream_http_remote_email;
 
-        proxy_pass http://192.168.0.50:3000;
+        proxy_pass http://10.0.0.50:3000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -194,7 +194,7 @@ server {
 
     location = /auth {
         internal;
-        proxy_pass http://192.168.0.30:9091/api/verify;
+        proxy_pass http://10.0.0.30:9091/api/verify;
         proxy_pass_request_body off;
         proxy_set_header Content-Length "";
         proxy_set_header X-Original-URL $scheme://$host$request_uri;
@@ -209,16 +209,16 @@ server {
 }
 ```
 
-## Site: auth.unseen-uni.xyz (`/etc/nginx/sites-available/auth.unseen-uni.xyz`)
+## Site: auth.example.com (`/etc/nginx/sites-available/auth.example.com`)
 
 ```nginx
 server {
     listen 80;
-    server_name auth.unseen-uni.xyz;
+    server_name auth.example.com;
 
     # No auth_request here - this IS the auth portal
     location / {
-        proxy_pass http://192.168.0.30:9091;
+        proxy_pass http://10.0.0.30:9091;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -244,9 +244,9 @@ server {
 ## Enable Sites
 
 ```bash
-ln -s /etc/nginx/sites-available/git.unseen-uni.xyz /etc/nginx/sites-enabled/
-ln -s /etc/nginx/sites-available/grafana.unseen-uni.xyz /etc/nginx/sites-enabled/
-ln -s /etc/nginx/sites-available/auth.unseen-uni.xyz /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/git.example.com /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/grafana.example.com /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/auth.example.com /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 
 # Test and reload
@@ -283,11 +283,11 @@ nginx -t
 ss -tlnp | grep :80
 
 # Test locally
-curl -H "Host: git.unseen-uni.xyz" http://192.168.0.10:80
+curl -H "Host: git.example.com" http://10.0.0.10:80
 # Should return 401 (no auth) or redirect to auth
 
 # Test via Cloudflare tunnel
-curl -I https://git.unseen-uni.xyz
+curl -I https://git.example.com
 # Should work end-to-end
 ```
 

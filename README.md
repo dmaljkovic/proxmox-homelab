@@ -13,12 +13,12 @@ graph TB
     User[Internet User] --> CF[Cloudflare Edge]
     CF --> Tunnel[Cloudflare Tunnel]
     Tunnel --> CFD[cloudflared on Host]
-    CFD --> Nginx[Nginx LXC<br/>192.168.0.10]
-    Nginx -.->|auth_request| Authelia[Authelia LXC<br/>192.168.0.30]
-    Authelia -.->|LDAPS| LDAP[OpenLDAP LXC<br/>192.168.0.20]
-    Nginx --> Gitea[Gitea LXC<br/>192.168.0.40]
-    Nginx --> Grafana[Grafana LXC<br/>192.168.0.50]
-    Prom[Prometheus LXC<br/>192.168.0.60] -.->|scrape| Nginx
+    CFD --> Nginx[Nginx LXC<br/>10.0.0.10]
+    Nginx -.->|auth_request| Authelia[Authelia LXC<br/>10.0.0.30]
+    Authelia -.->|LDAPS| LDAP[OpenLDAP LXC<br/>10.0.0.20]
+    Nginx --> Gitea[Gitea LXC<br/>10.0.0.40]
+    Nginx --> Grafana[Grafana LXC<br/>10.0.0.50]
+    Prom[Prometheus LXC<br/>10.0.0.60] -.->|scrape| Nginx
     Prom -.->|scrape| Gitea
     Prom -.->|scrape| Grafana
     Prom -.->|scrape| Authelia
@@ -45,9 +45,9 @@ graph TB
 
 | Service | URL | Purpose |
 |---------|-----|---------|
-| Gitea | https://git.unseen-uni.xyz | Git hosting, GitHub mirror |
-| Grafana | https://grafana.unseen-uni.xyz | Dashboards, visualization |
-| Authelia | https://auth.unseen-uni.xyz | SSO portal, MFA |
+| Gitea | https://git.example.com | Git hosting, GitHub mirror |
+| Grafana | https://grafana.example.com | Dashboards, visualization |
+| Authelia | https://auth.example.com | SSO portal, MFA |
 | Prometheus | Internal only | Metrics collection |
 
 ## Hardware
@@ -90,7 +90,7 @@ proxmox-homelab/
 
 ## Documentation
 
-**Live at**: https://dmaljkovic.github.io/proxmox-homelab/
+**Live at**: https://yourusername.github.io/proxmox-homelab/
 
 Built with MkDocs Material, deployed via GitHub Pages.
 
@@ -122,4 +122,4 @@ MIT License — see [LICENSE](LICENSE)
 
 ## Author
 
-**Maljkovic** — [GitHub](https://github.com/dmaljkovic)
+**Maljkovic** — [GitHub](https://github.com/yourusername)

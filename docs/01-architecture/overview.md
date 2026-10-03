@@ -24,18 +24,18 @@ graph TB
         Tunnel[Cloudflare Tunnel]
     end
     
-    subgraph "Lenovo Y520 (192.168.0.0/24)"
-        Host[Proxmox VE Host<br/>192.168.0.99]
+    subgraph "Lenovo Y520 (10.0.0.0/24)"
+        Host[Proxmox VE Host<br/>10.0.0.100]
         
         subgraph "vmbr0 Bridge"
             CF[cloudflared<br/>on Host]
-            Nginx[Nginx LXC 101<br/>192.168.0.10]
-            LDAP[OpenLDAP LXC 102<br/>192.168.0.20]
-            Authelia[Authelia LXC 103<br/>192.168.0.30]
-            Gitea[Gitea LXC 104<br/>192.168.0.40]
-            Grafana[Grafana LXC 105<br/>192.168.0.50]
-            Prom[Prometheus LXC 106<br/>192.168.0.60]
-            Sec[Security LXC 107<br/>192.168.0.70]
+            Nginx[Nginx LXC 101<br/>10.0.0.10]
+            LDAP[OpenLDAP LXC 102<br/>10.0.0.20]
+            Authelia[Authelia LXC 103<br/>10.0.0.30]
+            Gitea[Gitea LXC 104<br/>10.0.0.40]
+            Grafana[Grafana LXC 105<br/>10.0.0.50]
+            Prom[Prometheus LXC 106<br/>10.0.0.60]
+            Sec[Security LXC 107<br/>10.0.0.70]
         end
     end
     
@@ -72,33 +72,33 @@ graph TB
 
 ## Data Flow
 
-### Web Request (git.unseen-uni.xyz)
+### Web Request (git.example.com)
 
 ```
-1. User → https://git.unseen-uni.xyz
+1. User → https://git.example.com
 2. Cloudflare Edge (TLS, WAF)
 3. Cloudflare Tunnel (QUIC, encrypted)
 4. cloudflared (on Proxmox host)
-5. Nginx (192.168.0.10:80)
-6. auth_request → Authelia (192.168.0.30:9091)
+5. Nginx (10.0.0.10:80)
+6. auth_request → Authelia (10.0.0.30:9091)
 7. Authelia validates session / redirects to login
-8. Authelia → OpenLDAP (192.168.0.20:636) for credentials
+8. Authelia → OpenLDAP (10.0.0.20:636) for credentials
 9. Authelia returns 200 + headers (user, groups)
-10. Nginx → proxy_pass → Gitea (192.168.0.40:3000)
+10. Nginx → proxy_pass → Gitea (10.0.0.40:3000)
 11. Gitea receives authenticated request
 ```
 
 ### Metrics Collection
 
 ```
-Prometheus (192.168.0.60:9090) scrapes:
-- Nginx: 192.168.0.10:9113 (nginx-prometheus-exporter)
-- Gitea: 192.168.0.40:3000/metrics
-- Grafana: 192.168.0.50:3000/metrics
-- Authelia: 192.168.0.30:9091/metrics
-- OpenLDAP: 192.168.0.20:9187 (ldap-exporter)
-- Node Exporter: 192.168.0.99:9100 (on Proxmox host)
-- All LXCs: 192.168.0.x:9100 (node_exporter in each)
+Prometheus (10.0.0.60:9090) scrapes:
+- Nginx: 10.0.0.10:9113 (nginx-prometheus-exporter)
+- Gitea: 10.0.0.40:3000/metrics
+- Grafana: 10.0.0.50:3000/metrics
+- Authelia: 10.0.0.30:9091/metrics
+- OpenLDAP: 10.0.0.20:9187 (ldap-exporter)
+- Node Exporter: 10.0.0.100:9100 (on Proxmox host)
+- All LXCs: 10.0.0.x:9100 (node_exporter in each)
 ```
 
 ## Resource Allocation
