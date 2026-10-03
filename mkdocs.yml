@@ -5,12 +5,18 @@ repo_name: dmaljkovic/proxmox-homelab
 theme:
   name: material
   palette:
-    - scheme: default
-      primary: indigo
-      accent: indigo
     - scheme: slate
       primary: indigo
       accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
   features:
     - navigation.tabs
     - navigation.sections
@@ -18,6 +24,7 @@ theme:
     - toc.integrate
     - search.suggest
     - content.code.copy
+    - content.tooltips
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
