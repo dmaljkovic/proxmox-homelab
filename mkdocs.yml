@@ -52,7 +52,7 @@ nav:
       - Backups: 02-proxmox/backups.md
   - Networking:
       - Bridge (vmbr0): 03-networking/vmbr0.md
-      - Network Design: 01-architecture/network.md
+      - Network Design: 03-networking/network-design.md
       - Cloudflare Tunnel: 03-networking/cloudflare-tunnel.md
       - Firewall: 03-networking/firewall.md
   - Identity:
