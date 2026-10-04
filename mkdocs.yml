@@ -45,7 +45,6 @@ nav:
   - Architecture:
       - Overview: 01-architecture/overview.md
       - Hardware: 01-architecture/hardware.md
-      - Network: 01-architecture/network.md
   - Proxmox:
       - Installation: 02-proxmox/installation.md
       - Storage: 02-proxmox/storage.md
@@ -53,6 +52,7 @@ nav:
       - Backups: 02-proxmox/backups.md
   - Networking:
       - Bridge (vmbr0): 03-networking/vmbr0.md
+      - Network Design: 01-architecture/network.md
       - Cloudflare Tunnel: 03-networking/cloudflare-tunnel.md
       - Firewall: 03-networking/firewall.md
   - Identity:
@@ -78,5 +78,4 @@ nav:
   - Backups:
       - Strategy: 09-backups/strategy.md
       - Disaster Recovery: 09-backups/disaster-recovery.md
-  - Lessons Learned: 10-lessons-learned.md
   - License: license.md
