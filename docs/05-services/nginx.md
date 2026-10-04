@@ -6,7 +6,7 @@
 - Reverse proxy for all web services
 - `auth_request` integration with Authelia
 - Host-based routing (git, grafana, auth)
-- Security headers, rate limiting
+- Security headers
 
 ## Architecture
 
@@ -252,25 +252,6 @@ rm -f /etc/nginx/sites-enabled/default
 # Test and reload
 nginx -t
 systemctl reload nginx
-```
-
-## Rate Limiting (Optional)
-
-```nginx
-# In http block
-limit_req_zone $binary_remote_addr zone=login:10m rate=5r/s;
-limit_req_zone $binary_remote_addr zone=api:10m rate=30r/s;
-
-# In server block for git/grafana
-location / {
-    limit_req zone=api burst=50 nodelay;
-    # ... rest of config
-}
-
-location /user/login {
-    limit_req zone=login burst=5 nodelay;
-    # ... rest of config
-}
 ```
 
 ## Verification
