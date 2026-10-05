@@ -90,7 +90,7 @@ proxmox-homelab/
 
 ## Documentation
 
-**Live at**: https://yourusername.github.io/proxmox-homelab/
+**Live at**: https://dmaljkovic.github.io/proxmox-homelab/
 
 Built with MkDocs Material, deployed via GitHub Pages.
 
@@ -122,4 +122,4 @@ MIT License — see [LICENSE](LICENSE)
 
 ## Author
 
-**Maljkovic** — [GitHub](https://github.com/yourusername)
+**Maljkovic** — [GitHub](https://github.com/dmaljkovic)
