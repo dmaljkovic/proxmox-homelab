@@ -8,15 +8,7 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in this homelab configuration, please report it by:
-
-1. **Do not create a public issue**
-2. Email: security@example.com (or create a private GitHub Security Advisory)
-3. Include:
-   - Description of the vulnerability
-   - Steps to reproduce
-   - Potential impact
-   - Suggested fix (if any)
+Security issues: Create a GitHub Security Advisory.
 
 ## Security Architecture
 
@@ -86,7 +78,3 @@ If you discover a security vulnerability in this homelab configuration, please r
 ## Compliance Notes
 
 This is a personal homelab project demonstrating security practices. Not certified for any compliance framework (SOC2, ISO27001, etc.).
-
-## Contact
-
-Security issues: Create a GitHub Security Advisory or email security@example.com
