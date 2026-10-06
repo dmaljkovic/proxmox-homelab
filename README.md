@@ -43,12 +43,12 @@ graph TB
 
 ## Services
 
-| Service | URL | Purpose |
-|---------|-----|---------|
-| Gitea | https://git.example.com | Git hosting, GitHub mirror |
-| Grafana | https://grafana.example.com | Dashboards, visualization |
-| Authelia | https://auth.example.com | SSO portal, MFA |
-| Prometheus | Internal only | Metrics collection |
+| Service | Purpose |
+|---------|---------|
+| Gitea | Git hosting, GitHub mirror |
+| Grafana | Dashboards, visualization |
+| Authelia | SSO portal, MFA |
+| Prometheus | Metrics collection |
 
 ## Hardware
 
