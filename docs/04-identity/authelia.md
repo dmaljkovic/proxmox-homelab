@@ -224,4 +224,3 @@ cp /var/lib/authelia/db.sqlite3 /backup/authelia-$(date +%F).sqlite3
 
 - [Authelia Docs](https://www.authelia.com/docs/)
 - [OIDC Spec](https://openid.net/specs/openid-connect-core-1_0.html)
-- [LDAP Backend](https://www.authelia.com/docs/configuration/authenticators/ldap/)
