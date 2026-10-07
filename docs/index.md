@@ -1,12 +1,12 @@
 # Proxmox Homelab
 
-A lightweight, security-focused homelab running on a Generic Laptop laptop with 16 GB RAM.
+A lightweight, security-focused homelab running on a Generic Laptop with 16 GB RAM.
 
 ## Quick Links
 
 - [Architecture Overview](01-architecture/overview.md)
 - [Hardware Specs](01-architecture/hardware.md)
-- [Network Design](01-architecture/network.md)
+- [Network Design (vmbr0)](03-networking/vmbr0.md)
 - [Proxmox Installation](02-proxmox/installation.md)
 - [Cloudflare Tunnel](03-networking/cloudflare-tunnel.md)
 - [OpenLDAP](04-identity/openldap.md)
