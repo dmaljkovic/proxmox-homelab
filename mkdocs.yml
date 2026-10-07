@@ -47,9 +47,6 @@ nav:
       - Hardware: 01-architecture/hardware.md
   - Proxmox:
       - Installation: 02-proxmox/installation.md
-      - Storage: 02-proxmox/storage.md
-      - LXC: 02-proxmox/lxc.md
-      - Backups: 02-proxmox/backups.md
   - Networking:
       - Bridge (vmbr0): 03-networking/vmbr0.md
       - Network Design: 03-networking/network-design.md
