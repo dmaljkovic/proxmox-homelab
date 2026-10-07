@@ -7,7 +7,7 @@ Authelia provides Single Sign-On (SSO) and Multi-Factor Authentication (MFA) for
 ## Deployment
 
 - **Container**: LXC 103
-- **IP**: 192.168.0.30
+- **IP**: 10.0.0.30
 - **RAM**: 256 MB
 - **Disk**: 4 GB
 - **OS**: Debian 12 (Bookworm)
@@ -43,16 +43,16 @@ log:
 
 jwt_secret: "GENERATE_WITH_openssl_rand_base64_32"
 
-default_redirection_url: https://auth.unseen-uni.xyz
+default_redirection_url: https://auth.example.com
 
 totp:
-  issuer: unseen-uni.xyz
+  issuer: example.com
   period: 30
   skew: 1
 
 authentication_backend:
   ldap:
-    address: ldaps://192.168.0.20:636
+    address: ldaps://10.0.0.20:636
     base_dn: dc=unseen-uni,dc=xyz
     user_filter: (uid={input})
     bind_dn: cn=admin,dc=unseen-uni,dc=xyz
@@ -71,11 +71,11 @@ authentication_backend:
 access_control:
   default_policy: deny
   rules:
-    - domain: auth.unseen-uni.xyz
+    - domain: auth.example.com
       policy: bypass
     - domain:
-        - git.unseen-uni.xyz
-        - grafana.unseen-uni.xyz
+        - git.example.com
+        - grafana.example.com
       policy: two_factor
       subject:
         - group: admins
@@ -83,15 +83,15 @@ access_control:
 
 session:
   name: authelia_session
-  domain: unseen-uni.xyz
+  domain: example.com
   same_site: lax
   expiration: 1h
   inactivity: 5m
   remember_me_duration: 1M
   cookies:
-    - domain: unseen-uni.xyz
-      authelia_url: https://auth.unseen-uni.xyz
-      default_redirection_url: https://auth.unseen-uni.xyz
+    - domain: example.com
+      authelia_url: https://auth.example.com
+      default_redirection_url: https://auth.example.com
 
 regulation:
   max_retries: 3
@@ -126,7 +126,7 @@ openssl rand -base64 32
 - client_id: gitea
   client_secret: "GENERATE_SECRET"
   redirect_uris:
-    - https://git.unseen-uni.xyz/user/oauth2/oidc/callback
+    - https://git.example.com/user/oauth2/oidc/callback
   scopes:
     - openid
     - profile
@@ -140,7 +140,7 @@ openssl rand -base64 32
 - client_id: grafana
   client_secret: "GENERATE_SECRET"
   redirect_uris:
-    - https://grafana.unseen-uni.xyz/login/generic_oauth
+    - https://grafana.example.com/login/generic_oauth
   scopes:
     - openid
     - profile
@@ -163,13 +163,13 @@ location / {
     auth_request /auth;
     auth_request_set $user $upstream_http_remote_user;
     auth_request_set $groups $upstream_http_remote_groups;
-    proxy_pass http://192.168.0.40:3000;
+    proxy_pass http://10.0.0.40:3000;
     ...
 }
 
 location = /auth {
     internal;
-    proxy_pass http://192.168.0.30:9091/api/verify;
+    proxy_pass http://10.0.0.30:9091/api/verify;
     proxy_pass_request_body off;
     proxy_set_header Content-Length "";
     proxy_set_header X-Original-URL $scheme://$host$request_uri;
@@ -182,9 +182,9 @@ location = /auth {
 ```nginx
 server {
     listen 80;
-    server_name auth.unseen-uni.xyz;
+    server_name auth.example.com;
     location / {
-        proxy_pass http://192.168.0.30:9091;
+        proxy_pass http://10.0.0.30:9091;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         ...
@@ -195,8 +195,8 @@ server {
 ## Firewall
 
 ```bash
-ufw allow from 192.168.0.10 to any port 9091 proto tcp
-ufw allow from 192.168.0.10 to any port 9090 proto tcp
+ufw allow from 10.0.0.10 to any port 9091 proto tcp
+ufw allow from 10.0.0.10 to any port 9090 proto tcp
 ufw reload
 ```
 
@@ -204,13 +204,13 @@ ufw reload
 
 ```bash
 # Health check
-curl -s http://192.168.0.30:9090/api/health
+curl -s http://10.0.0.30:9090/api/health
 
 # Login page
-curl -I https://auth.unseen-uni.xyz
+curl -I https://auth.example.com
 
 # Test OIDC discovery
-curl -s https://auth.unseen-uni.xyz/.well-known/openid-configuration
+curl -s https://auth.example.com/.well-known/openid-configuration
 ```
 
 ## Backup

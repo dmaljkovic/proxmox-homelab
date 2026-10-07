@@ -7,7 +7,7 @@ Grafana is an open-source analytics and monitoring platform. It provides dashboa
 ## Deployment
 
 - **Container**: LXC 105
-- **IP**: 192.168.0.50
+- **IP**: 10.0.0.50
 - **RAM**: 512 MB
 - **CPU**: 1 core
 - **Disk**: 8 GB
@@ -34,8 +34,8 @@ apt update && apt install -y grafana
 
 ```ini
 [server]
-domain = grafana.unseen-uni.xyz
-root_url = https://grafana.unseen-uni.xyz/
+domain = grafana.example.com
+root_url = https://grafana.example.com/
 serve_from_sub_path = false
 
 [database]
@@ -62,10 +62,10 @@ allow_sign_up = true
 client_id = grafana
 client_secret = grafana-secret
 scopes = openid profile email
-auth_url = https://auth.unseen-uni.xyz/api/oidc/authorization
-token_url = https://auth.unseen-uni.xyz/api/oidc/token
-api_url = https://auth.unseen-uni.xyz/api/oidc/userinfo
-allowed_domains = unseen-uni.xyz
+auth_url = https://auth.example.com/api/oidc/authorization
+token_url = https://auth.example.com/api/oidc/token
+api_url = https://auth.example.com/api/oidc/userinfo
+allowed_domains = example.com
 team_ids = 1
 role_attribute_path = groups
 allow_assign_grafana_admin = true
@@ -96,10 +96,10 @@ allow_sign_up = true
 client_id = grafana
 client_secret = grafana-secret
 scopes = openid profile email
-auth_url = https://auth.unseen-uni.xyz/api/oidc/authorization
-token_url = https://auth.unseen-uni.xyz/api/oidc/token
-api_url = https://auth.unseen-uni.xyz/api/oidc/userinfo
-allowed_domains = unseen-uni.xyz
+auth_url = https://auth.example.com/api/oidc/authorization
+token_url = https://auth.example.com/api/oidc/token
+api_url = https://auth.example.com/api/oidc/userinfo
+allowed_domains = example.com
 team_ids = 1
 role_attribute_path = groups
 allow_assign_grafana_admin = true
@@ -117,7 +117,7 @@ identity_providers:
         client_name: Grafana
         client_secret: "grafana-secret"
         redirect_uris:
-          - https://grafana.unseen-uni.xyz/login/generic_oauth
+          - https://grafana.example.com/login/generic_oauth
         scopes:
           - openid
           - profile
@@ -150,7 +150,7 @@ datasources:
   - name: Prometheus
     type: prometheus
     access: proxy
-    url: http://192.168.0.60:9090
+    url: http://10.0.0.60:9090
     isDefault: true
     editable: false
 ```
@@ -170,8 +170,8 @@ providers:
 ## Firewall
 
 ```bash
-ufw allow from 192.168.0.10 to any port 3000 proto tcp
-ufw allow from 192.168.0.60 to any port 3000 proto tcp
+ufw allow from 10.0.0.10 to any port 3000 proto tcp
+ufw allow from 10.0.0.60 to any port 3000 proto tcp
 ufw reload
 ```
 
@@ -179,13 +179,13 @@ ufw reload
 
 ```bash
 # Health check
-curl -s http://192.168.0.50:3000/api/health
+curl -s http://10.0.0.50:3000/api/health
 
 # Via Nginx/Cloudflare
-curl -I https://grafana.unseen-uni.xyz
+curl -I https://grafana.example.com
 
 # Test OIDC login
-# Visit https://grafana.unseen-uni.xyz -> should redirect to Authelia
+# Visit https://grafana.example.com -> should redirect to Authelia
 ```
 
 ## Dashboards to Import

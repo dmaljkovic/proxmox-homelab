@@ -1,6 +1,6 @@
 # Proxmox Homelab
 
-> A lightweight, security-focused homelab running on a Lenovo Y520 laptop with 16 GB RAM, demonstrating production-grade infrastructure patterns on constrained hardware.
+> A lightweight, security-focused homelab running on a Generic Laptop laptop with 16 GB RAM, demonstrating production-grade infrastructure patterns on constrained hardware.
 
 ## Overview
 
@@ -52,7 +52,7 @@ graph TB
 
 ## Hardware
 
-- **CPU**: Intel i7-7700HQ (4C/8T)
+- **CPU**: Intel i7 (4C/8T)
 - **RAM**: 16 GB DDR4
 - **Storage**: 128 GB M.2 SSD (ext4) + planned 2.5" SATA
 - **Network**: Gigabit Ethernet (vmbr0 bridge)

@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Lenovo Y520 connected via Ethernet
+- Generic Laptop connected via Ethernet
 - 4 GB+ USB stick
 - Proxmox VE 9.x ISO
 - Target disk: 128 GB M.2 SSD
@@ -27,9 +27,9 @@ sudo dd if=proxmox-ve_9.0.iso of=/dev/sdX bs=4M status=progress oflag=sync
 sync
 ```
 
-## Install on Y520
+## Install on Generic Laptop
 
-1. Boot Y520 from USB (F12 → select USB)
+1. Boot Generic Laptop from USB (F12 → select USB)
 2. **Welcome** → Next
 3. **EULA** → Accept
 4. **Target Disk** → Select 128 GB SSD

@@ -5,15 +5,15 @@
 Since the ISP uses CG-NAT (no public IPv4), we use Cloudflare Tunnel for secure, zero-trust access to internal services.
 
 ```
-Internet -> Cloudflare Edge -> Tunnel (QUIC/443) -> cloudflared (Proxmox host) -> Nginx (192.168.0.10:80)
+Internet -> Cloudflare Edge -> Tunnel (QUIC/443) -> cloudflared (Proxmox host) -> Nginx (10.0.0.10:80)
 ```
 
 ## Prerequisites
 
 - Cloudflare account with `example.com` zone
 - Domain already on Cloudflare (nameservers pointing to Cloudflare)
-- Proxmox host at `192.168.0.100` with outbound internet access
-- Nginx LXC planned at `192.168.0.10:80`
+- Proxmox host at `10.0.0.100` with outbound internet access
+- Nginx LXC planned at `10.0.0.10:80`
 
 ## Step 1: Install cloudflared on Your PC
 
@@ -62,15 +62,15 @@ credentials-file: /home/user/.cloudflared/<TUNNEL_ID>.json
 
 ingress:
   - hostname: git.example.com
-    service: http://192.168.0.10:80
+    service: http://10.0.0.10:80
     originRequest:
       noTLSVerify: true
   - hostname: grafana.example.com
-    service: http://192.168.0.10:80
+    service: http://10.0.0.10:80
     originRequest:
       noTLSVerify: true
   - hostname: auth.example.com
-    service: http://192.168.0.10:80
+    service: http://10.0.0.10:80
     originRequest:
       noTLSVerify: true
   - service: http_status:404
@@ -112,8 +112,8 @@ apt update && apt install -y cloudflared
 
 # Copy credentials and config
 mkdir -p /etc/cloudflared
-scp ~/.cloudflared/<TUNNEL_ID>.json root@192.168.0.100:/etc/cloudflared/
-scp ~/.cloudflared/config.yml root@192.168.0.100:/etc/cloudflared/
+scp ~/.cloudflared/<TUNNEL_ID>.json root@10.0.0.100:/etc/cloudflared/
+scp ~/.cloudflared/config.yml root@10.0.0.100:/etc/cloudflared/
 
 # Install as systemd service
 cloudflared service install
@@ -178,10 +178,10 @@ journalctl -u cloudflared -n 50
 
 ### 502 Bad Gateway
 ```bash
-# Check Nginx is running on 192.168.0.10:80
-ssh root@192.168.0.100
-ssh root@192.168.0.10 "systemctl status nginx"
-curl http://192.168.0.10:80
+# Check Nginx is running on 10.0.0.10:80
+ssh root@10.0.0.100
+ssh root@10.0.0.10 "systemctl status nginx"
+curl http://10.0.0.10:80
 ```
 
 ### DNS Not Resolving

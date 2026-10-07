@@ -43,7 +43,7 @@ identity_providers:
         client_name: Gitea
         client_secret: "gitea-secret"
         redirect_uris:
-          - https://git.unseen-uni.xyz/user/oauth2/oidc/callback
+          - https://git.example.com/user/oauth2/oidc/callback
         scopes:
           - openid
           - profile
@@ -62,7 +62,7 @@ identity_providers:
         client_name: Grafana
         client_secret: "grafana-secret"
         redirect_uris:
-          - https://grafana.unseen-uni.xyz/login/generic_oauth
+          - https://grafana.example.com/login/generic_oauth
         scopes:
           - openid
           - profile
@@ -86,8 +86,8 @@ identity_providers:
    - Name: Authelia
    - Client ID: gitea
    - Client Secret: (from Authelia config)
-   - Redirect URI: https://git.unseen-uni.xyz/user/oauth2/oidc/callback
-   - OpenID Connect Discovery URL: https://auth.unseen-uni.xyz/.well-known/openid-configuration
+   - Redirect URI: https://git.example.com/user/oauth2/oidc/callback
+   - OpenID Connect Discovery URL: https://auth.example.com/.well-known/openid-configuration
    - Scopes: openid profile email groups
    - Group Attribute Path: groups
    - Admin Group: admins
@@ -104,10 +104,10 @@ allow_sign_up = true
 client_id = grafana
 client_secret = grafana-secret
 scopes = openid profile email
-auth_url = https://auth.unseen-uni.xyz/api/oidc/authorization
-token_url = https://auth.unseen-uni.xyz/api/oidc/token
-api_url = https://auth.unseen-uni.xyz/api/oidc/userinfo
-allowed_domains = unseen-uni.xyz
+auth_url = https://auth.example.com/api/oidc/authorization
+token_url = https://auth.example.com/api/oidc/token
+api_url = https://auth.example.com/api/oidc/userinfo
+allowed_domains = example.com
 team_ids = 1
 role_attribute_path = groups
 ```
@@ -125,7 +125,7 @@ role_attribute_path = groups
 
 ```json
 {
-  "iss": "https://auth.unseen-uni.xyz",
+  "iss": "https://auth.example.com",
   "sub": "admin",
   "aud": "gitea",
   "exp": 1699999999,
@@ -133,7 +133,7 @@ role_attribute_path = groups
   "auth_time": 1699996399,
   "name": "Admin User",
   "preferred_username": "admin",
-  "email": "admin@unseen-uni.xyz",
+  "email": "admin@example.com",
   "email_verified": true,
   "groups": ["admins", "developers"]
 }
@@ -150,12 +150,12 @@ Required for public clients, recommended for all:
 ## Token Endpoint
 
 ```
-POST https://auth.unseen-uni.xyz/api/oidc/token
+POST https://auth.example.com/api/oidc/token
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=authorization_code&
 code=AUTH_CODE&
-redirect_uri=https://git.unseen-uni.xyz/user/oauth2/oidc/callback&
+redirect_uri=https://git.example.com/user/oauth2/oidc/callback&
 client_id=gitea&
 client_secret=SECRET&
 code_verifier=VERIFIER
@@ -176,24 +176,24 @@ Response:
 ## UserInfo Endpoint
 
 ```
-GET https://auth.unseen-uni.xyz/api/oidc/userinfo
+GET https://auth.example.com/api/oidc/userinfo
 Authorization: Bearer ACCESS_TOKEN
 ```
 
 ## Discovery Document
 
 ```bash
-curl https://auth.unseen-uni.xyz/.well-known/openid-configuration
+curl https://auth.example.com/.well-known/openid-configuration
 ```
 
 Response:
 ```json
 {
-  "issuer": "https://auth.unseen-uni.xyz",
-  "authorization_endpoint": "https://auth.unseen-uni.xyz/api/oidc/authorization",
-  "token_endpoint": "https://auth.unseen-uni.xyz/api/oidc/token",
-  "userinfo_endpoint": "https://auth.unseen-uni.xyz/api/oidc/userinfo",
-  "jwks_uri": "https://auth.unseen-uni.xyz/api/oidc/jwks",
+  "issuer": "https://auth.example.com",
+  "authorization_endpoint": "https://auth.example.com/api/oidc/authorization",
+  "token_endpoint": "https://auth.example.com/api/oidc/token",
+  "userinfo_endpoint": "https://auth.example.com/api/oidc/userinfo",
+  "jwks_uri": "https://auth.example.com/api/oidc/jwks",
   "scopes_supported": ["openid", "profile", "email", "groups"],
   "response_types_supported": ["code"],
   "grant_types_supported": ["authorization_code", "refresh_token"],
@@ -206,7 +206,7 @@ Response:
 ## JWKS (JSON Web Key Set)
 
 ```bash
-curl https://auth.unseen-uni.xyz/api/oidc/jwks
+curl https://auth.example.com/api/oidc/jwks
 ```
 
 ## Logout
@@ -214,7 +214,7 @@ curl https://auth.unseen-uni.xyz/api/oidc/jwks
 ### RP-Initiated Logout
 
 ```
-GET https://auth.unseen-uni.xyz/api/oidc/logout?id_token_hint=ID_TOKEN&post_logout_redirect_uri=https://git.unseen-uni.xyz
+GET https://auth.example.com/api/oidc/logout?id_token_hint=ID_TOKEN&post_logout_redirect_uri=https://git.example.com
 ```
 
 ### Front-Channel Logout

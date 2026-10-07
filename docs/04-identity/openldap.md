@@ -12,7 +12,7 @@ OpenLDAP serves as the centralized identity store for the homelab. It provides:
 ## Deployment
 
 - **Container**: LXC 102
-- **IP**: 192.168.0.20
+- **IP**: 10.0.0.20
 - **RAM**: 256 MB
 - **Disk**: 4 GB
 - **OS**: Debian 12 (Bookworm)
@@ -34,7 +34,7 @@ dpkg-reconfigure slapd
 
 # Settings:
 # - Omit OpenLDAP server configuration? -> No
-# - DNS domain name: unseen-uni.xyz
+# - DNS domain name: example.com
 # - Organization name: Homelab
 # - Admin password: (strong password)
 # - Database backend: MDB
@@ -70,22 +70,22 @@ req_extensions = v3_req
 prompt = no
 
 [req_distinguished_name]
-CN = openldap.unseen-uni.xyz
+CN = openldap.example.com
 
 [v3_req]
 subjectAltName = @alt_names
 
 [alt_names]
-DNS.1 = openldap.unseen-uni.xyz
-DNS.2 = ldap.unseen-uni.xyz
+DNS.1 = openldap.example.com
+DNS.2 = ldap.example.com
 IP.1 = 127.0.0.1
-IP.2 = 192.168.0.20
+IP.2 = 10.0.0.20
 EOF
 
 openssl req -new -x509 -nodes -out /etc/ldap/certs/ldap.crt \
   -keyout /etc/ldap/certs/ldap.key \
   -days 3650 -config /etc/ldap/certs/openssl.cnf \
-  -extensions v3_req -subj "/CN=openldap.unseen-uni.xyz"
+  -extensions v3_req -subj "/CN=openldap.example.com"
 
 chown openldap:openldap /etc/ldap/certs/ldap.*
 chmod 640 /etc/ldap/certs/ldap.key
@@ -229,7 +229,7 @@ EOF
 ## Firewall
 
 ```bash
-ufw allow from 192.168.0.0/24 to any port 636 proto tcp
+ufw allow from 10.0.0.0/24 to any port 636 proto tcp
 ufw allow from 10.0.0.0/24 to any port 636 proto tcp
 ufw reload
 ```
@@ -238,14 +238,14 @@ ufw reload
 
 ```bash
 # From Proxmox host - anonymous search
-ldapsearch -x -H ldaps://192.168.0.20 -b "dc=unseen-uni,dc=xyz" -TLS_REQCERT never
+ldapsearch -x -H ldaps://10.0.0.20 -b "dc=unseen-uni,dc=xyz" -TLS_REQCERT never
 
 # Authenticated search
-ldapsearch -x -H ldaps://192.168.0.20 -b "dc=unseen-uni,dc=xyz" \
+ldapsearch -x -H ldaps://10.0.0.20 -b "dc=unseen-uni,dc=xyz" \
   -TLS_REQCERT never -D "cn=admin,dc=unseen-uni,dc=xyz" -w "admin-password"
 
 # Test admin bind
-ldapwhoami -x -H ldaps://192.168.0.20 \
+ldapwhoami -x -H ldaps://10.0.0.20 \
   -D "uid=admin,ou=people,dc=unseen-uni,dc=xyz" -w "admin-password" \
   -TLS_REQCERT never
 ```
@@ -254,8 +254,8 @@ ldapwhoami -x -H ldaps://192.168.0.20 \
 
 | Source | Destination | Port | Protocol |
 |--------|-------------|------|----------|
-| 192.168.0.0/24 | 192.168.0.20 | 636 | TCP |
-| 10.0.0.0/24 | 192.168.0.20 | 636 | TCP |
+| 10.0.0.0/24 | 10.0.0.20 | 636 | TCP |
+| 10.0.0.0/24 | 10.0.0.20 | 636 | TCP |
 
 ## Authelia Integration
 
@@ -265,7 +265,7 @@ Authelia (LXC 103) will connect to OpenLDAP via LDAPS:
 # authelia configuration.yml snippet
 authentication_backend:
   ldap:
-    address: ldaps://192.168.0.20:636
+    address: ldaps://10.0.0.20:636
     base_dn: dc=unseen-uni,dc=xyz
     user_filter: (uid={input})
     bind_dn: cn=admin,dc=unseen-uni,dc=xyz
