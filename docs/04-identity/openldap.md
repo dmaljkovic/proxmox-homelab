@@ -46,7 +46,7 @@ dpkg-reconfigure slapd
 ## Base DN Structure
 
 ```
-dc=unseen-uni,dc=xyz
+dc=example,dc=com
 ├── ou=people
 │   └── uid=admin (uid=1000)
 └── ou=groups
@@ -121,7 +121,7 @@ systemctl restart slapd
 
 ```bash
 cat > /etc/ldap/ldap.conf << 'EOF'
-BASE dc=unseen-uni,dc=xyz
+BASE dc=example,dc=com
 URI ldaps://127.0.0.1
 TLS_CACERT /etc/ldap/certs/ldap.crt
 TLS_REQCERT allow
@@ -131,19 +131,19 @@ EOF
 ## Organizational Structure
 
 ```text
-dn: dc=unseen-uni,dc=xyz
+dn: dc=example,dc=com
 objectClass: top
 objectClass: dcObject
 objectClass: organization
 o: Unseen University
-dc: unseen-uni
+dc: example
 
 # Organizational Units
-ou=people,dc=unseen-uni,dc=xyz
-ou=groups,dc=unseen-uni,dc=xyz
+ou=people,dc=example,dc=com
+ou=groups,dc=example,dc=com
 
 # Admin User
-uid=admin,ou=people,dc=unseen-uni,dc=xyz
+uid=admin,ou=people,dc=example,dc=com
 objectClass: inetOrgPerson
 objectClass: posixAccount
 objectClass: shadowAccount
@@ -156,8 +156,8 @@ homeDirectory: /home/admin
 userPassword: {SSHA}...
 
 # Groups
-cn=developers,ou=groups,dc=unseen-uni,dc=xyz
-cn=admins,ou=groups,dc=unseen-uni,dc=xyz
+cn=developers,ou=groups,dc=example,dc=com
+cn=admins,ou=groups,dc=example,dc=com
 ```
 
 ## Access Control (ACLs)
@@ -184,11 +184,11 @@ changetype: modify
 add: olcModuleLoad
 olcModuleLoad: ppolicy.la
 
-dn: ou=policies,dc=unseen-uni,dc=xyz
+dn: ou=policies,dc=example,dc=com
 objectClass: organizationalUnit
 ou: policies
 
-dn: cn=default,ou=policies,dc=unseen-uni,dc=xyz
+dn: cn=default,ou=policies,dc=example,dc=com
 objectClass: pwdPolicy
 objectClass: person
 cn: default
@@ -238,15 +238,15 @@ ufw reload
 
 ```bash
 # From Proxmox host - anonymous search
-ldapsearch -x -H ldaps://10.0.0.20 -b "dc=unseen-uni,dc=xyz" -TLS_REQCERT never
+ldapsearch -x -H ldaps://10.0.0.20 -b "dc=example,dc=com" -TLS_REQCERT never
 
 # Authenticated search
-ldapsearch -x -H ldaps://10.0.0.20 -b "dc=unseen-uni,dc=xyz" \
-  -TLS_REQCERT never -D "cn=admin,dc=unseen-uni,dc=xyz" -w "admin-password"
+ldapsearch -x -H ldaps://10.0.0.20 -b "dc=example,dc=com" \
+  -TLS_REQCERT never -D "cn=admin,dc=example,dc=com" -w "admin-password"
 
 # Test admin bind
 ldapwhoami -x -H ldaps://10.0.0.20 \
-  -D "uid=admin,ou=people,dc=unseen-uni,dc=xyz" -w "admin-password" \
+  -D "uid=admin,ou=people,dc=example,dc=com" -w "admin-password" \
   -TLS_REQCERT never
 ```
 
@@ -266,9 +266,9 @@ Authelia (LXC 103) will connect to OpenLDAP via LDAPS:
 authentication_backend:
   ldap:
     address: ldaps://10.0.0.20:636
-    base_dn: dc=unseen-uni,dc=xyz
+    base_dn: dc=example,dc=com
     user_filter: (uid={input})
-    bind_dn: cn=admin,dc=unseen-uni,dc=xyz
+    bind_dn: cn=admin,dc=example,dc=com
     bind_password: admin-password
     attributes:
       username: uid
@@ -276,7 +276,7 @@ authentication_backend:
       email: mail
       group: memberOf
     group_search:
-      base_dn: ou=groups,dc=unseen-uni,dc=xyz
+      base_dn: ou=groups,dc=example,dc=com
       filter: (memberUid={username})
       attribute: cn
 ```

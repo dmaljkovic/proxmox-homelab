@@ -53,9 +53,9 @@ totp:
 authentication_backend:
   ldap:
     address: ldaps://10.0.0.20:636
-    base_dn: dc=unseen-uni,dc=xyz
+    base_dn: dc=example,dc=com
     user_filter: (uid={input})
-    bind_dn: cn=admin,dc=unseen-uni,dc=xyz
+    bind_dn: cn=admin,dc=example,dc=com
     bind_password: admin-password
     attributes:
       username: uid
@@ -63,7 +63,7 @@ authentication_backend:
       email: mail
       group: memberOf
     group_search:
-      base_dn: ou=groups,dc=unseen-uni,dc=xyz
+      base_dn: ou=groups,dc=example,dc=com
       filter: (memberUid={username})
       attribute: cn
     timeout: 5s
