@@ -7,7 +7,7 @@ Gitea is a lightweight, self-hosted Git service written in Go. It provides Git h
 ## Deployment
 
 - **Container**: LXC 104
-- **IP**: 192.168.0.40
+- **IP**: 10.0.0.40
 - **RAM**: 768 MB
 - **CPU**: 2 cores
 - **Disk**: 8 GB
@@ -47,9 +47,9 @@ chmod 770 /etc/gitea
 APP_NAME = Gitea
 RUN_USER = git
 RUN_MODE = prod
-DOMAIN = git.unseen-uni.xyz
-ROOT_URL = https://git.unseen-uni.xyz/
-SSH_DOMAIN = git.unseen-uni.xyz
+DOMAIN = git.example.com
+ROOT_URL = https://git.example.com/
+SSH_DOMAIN = git.example.com
 SSH_PORT = 22
 LFS_START_SERVER = true
 LFS_CONTENT_PATH = /var/lib/gitea/data/lfs
@@ -116,8 +116,8 @@ ENABLED = true
 # Name: Authelia
 # Client ID: gitea
 # Client Secret: (from Authelia config)
-# Redirect URI: https://git.unseen-uni.xyz/user/oauth2/oidc/callback
-# OpenID Connect Discovery URL: https://auth.unseen-uni.xyz/.well-known/openid-configuration
+# Redirect URI: https://git.example.com/user/oauth2/oidc/callback
+# OpenID Connect Discovery URL: https://auth.example.com/.well-known/openid-configuration
 # Scopes: openid profile email groups
 # Group Attribute Path: groups
 # Admin Group: admins
@@ -184,8 +184,8 @@ cat /home/git/.ssh/id_ed25519.pub
 ## Firewall
 
 ```bash
-ufw allow from 192.168.0.10 to any port 3000 proto tcp
-ufw allow from 192.168.0.10 to any port 22 proto tcp
+ufw allow from 10.0.0.10 to any port 3000 proto tcp
+ufw allow from 10.0.0.10 to any port 22 proto tcp
 ufw reload
 ```
 
@@ -202,13 +202,13 @@ gitea dump -c /etc/gitea/app.ini -o /backup/gitea-$(date +%F).zip
 
 ```bash
 # Health check
-curl -s http://192.168.0.40:3000/healthz
+curl -s http://10.0.0.40:3000/healthz
 
 # Via Nginx/Cloudflare
-curl -I https://git.unseen-uni.xyz
+curl -I https://git.example.com
 
 # Test OIDC login
-# Visit https://git.unseen-uni.xyz -> should redirect to Authelia
+# Visit https://git.example.com -> should redirect to Authelia
 ```
 
 ## References

@@ -24,7 +24,7 @@ graph TB
         Tunnel[Cloudflare Tunnel]
     end
     
-    subgraph "Lenovo Y520 (10.0.0.0/24)"
+    subgraph "Generic Laptop (10.0.0.0/24)"
         Host[Proxmox VE Host<br/>10.0.0.100]
         
         subgraph "vmbr0 Bridge"

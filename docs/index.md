@@ -1,6 +1,6 @@
 # Proxmox Homelab
 
-A lightweight, security-focused homelab running on a Lenovo Y520 laptop with 16 GB RAM.
+A lightweight, security-focused homelab running on a Generic Laptop laptop with 16 GB RAM.
 
 ## Quick Links
 
