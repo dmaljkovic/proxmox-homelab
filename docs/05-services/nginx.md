@@ -77,6 +77,14 @@ http {
     real_ip_header CF-Connecting-IP;
     real_ip_recursive on;
 
+    # Cloudflare terminates TLS and forwards X-Forwarded-Proto: https, but Nginx
+    # only sees plain HTTP, so $scheme would be "http". Authelia rejects http
+    # target URLs and cannot build its OIDC issuer, so recover the real scheme.
+    map $http_x_forwarded_proto $forwarded_scheme {
+        default $http_x_forwarded_proto;
+        ""      $scheme;
+    }
+
     # Logging
     log_format main '$remote_addr - $remote_user [$time_local] "$request" '
                     '$status $body_bytes_sent "$http_referer" '
@@ -115,12 +123,13 @@ server {
         auth_request_set $user $upstream_http_remote_user;
         auth_request_set $groups $upstream_http_remote_groups;
         auth_request_set $email $upstream_http_remote_email;
+        error_page 401 =302 https://auth.example.com/?rd=$forwarded_scheme://$host$request_uri;
 
         proxy_pass http://10.0.0.40:3000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Proto $forwarded_scheme;
         proxy_set_header Remote-User $user;
         proxy_set_header Remote-Groups $groups;
         proxy_set_header Remote-Email $email;
@@ -139,10 +148,10 @@ server {
         proxy_pass http://10.0.0.30:9091/api/verify;
         proxy_pass_request_body off;
         proxy_set_header Content-Length "";
-        proxy_set_header X-Original-URL $scheme://$host$request_uri;
+        proxy_set_header X-Original-URL $forwarded_scheme://$host$request_uri;
         proxy_set_header X-Original-Method $request_method;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Proto $forwarded_scheme;
     }
 
     # Health check (no auth)
@@ -172,12 +181,13 @@ server {
         auth_request_set $user $upstream_http_remote_user;
         auth_request_set $groups $upstream_http_remote_groups;
         auth_request_set $email $upstream_http_remote_email;
+        error_page 401 =302 https://auth.example.com/?rd=$forwarded_scheme://$host$request_uri;
 
         proxy_pass http://10.0.0.50:3000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Proto $forwarded_scheme;
         proxy_set_header Remote-User $user;
         proxy_set_header Remote-Groups $groups;
         proxy_set_header Remote-Email $email;
@@ -197,7 +207,7 @@ server {
         proxy_pass http://10.0.0.30:9091/api/verify;
         proxy_pass_request_body off;
         proxy_set_header Content-Length "";
-        proxy_set_header X-Original-URL $scheme://$host$request_uri;
+        proxy_set_header X-Original-URL $forwarded_scheme://$host$request_uri;
         proxy_set_header X-Original-Method $request_method;
     }
 
@@ -222,7 +232,7 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Proto $forwarded_scheme;
         
         # Required for Authelia
         proxy_set_header X-Forwarded-Host $host;
@@ -265,7 +275,7 @@ ss -tlnp | grep :80
 
 # Test locally
 curl -H "Host: git.example.com" http://10.0.0.10:80
-# Should return 401 (no auth) or redirect to auth
+# Should return 302 redirect to the Authelia portal (unauthenticated)
 
 # Test via Cloudflare tunnel
 curl -I https://git.example.com

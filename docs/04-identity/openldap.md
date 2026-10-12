@@ -230,7 +230,6 @@ EOF
 
 ```bash
 ufw allow from 10.0.0.0/24 to any port 636 proto tcp
-ufw allow from 10.0.0.0/24 to any port 636 proto tcp
 ufw reload
 ```
 
@@ -255,31 +254,33 @@ ldapwhoami -x -H ldaps://10.0.0.20 \
 | Source | Destination | Port | Protocol |
 |--------|-------------|------|----------|
 | 10.0.0.0/24 | 10.0.0.20 | 636 | TCP |
-| 10.0.0.0/24 | 10.0.0.20 | 636 | TCP |
 
 ## Authelia Integration
 
-Authelia (LXC 103) will connect to OpenLDAP via LDAPS:
+Authelia (LXC 103) connects to OpenLDAP over LDAPS:
 
 ```yaml
 # authelia configuration.yml snippet
 authentication_backend:
   ldap:
+    implementation: custom
     address: ldaps://10.0.0.20:636
+    start_tls: false
+    user: cn=admin,dc=example,dc=com
+    password: admin-password
     base_dn: dc=example,dc=com
-    user_filter: (uid={input})
-    bind_dn: cn=admin,dc=example,dc=com
-    bind_password: admin-password
+    users_filter: "(&({username_attribute}={input})(objectClass=posixAccount))"
+    groups_filter: "(&(memberUid={username})(objectClass=posixGroup))"
     attributes:
       username: uid
       display_name: cn
-      email: mail
-      group: memberOf
-    group_search:
-      base_dn: ou=groups,dc=example,dc=com
-      filter: (memberUid={username})
-      attribute: cn
+      mail: mail
+      member_of: memberOf
 ```
+
+> `{username_attribute}` is substituted with the attribute name from
+> `attributes.username` (i.e. `uid`), while `{input}` is the value the user
+> typed. `{username}` in `groups_filter` is the resolved username.
 
 ## Backup
 

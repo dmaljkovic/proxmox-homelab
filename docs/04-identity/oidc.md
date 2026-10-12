@@ -30,8 +30,15 @@ User -> Service (Gitea/Grafana)
 # In authelia configuration.yml
 identity_providers:
   oidc:
-    issuer_private_key: "/config/certs/authelia.key"
-    issuer_public_key: "/config/certs/authelia.pub"
+    hmac_secret: "<RANDOM_64_CHAR>"
+    jwks:
+      - key_id: 'authelia'
+        algorithm: 'RS256'
+        use: 'sig'
+        key: |
+          -----BEGIN PRIVATE KEY-----
+          ... 2048-bit RSA private key (PKCS#8) ...
+          -----END PRIVATE KEY-----
     cors:
       endpoints:
         - authorization
@@ -41,7 +48,7 @@ identity_providers:
     clients:
       - client_id: gitea
         client_name: Gitea
-        client_secret: "gitea-secret"
+        client_secret: "<HASHED_CLIENT_SECRET>"
         redirect_uris:
           - https://git.example.com/user/oauth2/oidc/callback
         scopes:
@@ -49,33 +56,34 @@ identity_providers:
           - profile
           - email
           - groups
+          - offline_access
         grant_types:
           - authorization_code
           - refresh_token
         response_types:
           - code
-        public: false
-        require_pkce: true
-        pkce_challenge_method: S256
 
       - client_id: grafana
         client_name: Grafana
-        client_secret: "grafana-secret"
+        client_secret: "<HASHED_CLIENT_SECRET>"
         redirect_uris:
           - https://grafana.example.com/login/generic_oauth
         scopes:
           - openid
           - profile
           - email
+          - offline_access
         grant_types:
           - authorization_code
           - refresh_token
         response_types:
           - code
-        public: false
-        require_pkce: true
-        pkce_challenge_method: S256
 ```
+
+> **v4.38+ changes:** `issuer_private_key` was replaced by the `jwks` list, and
+> `hmac_secret` is now required. Client secrets should be stored as a PBKDF2
+> digest (`authelia crypto hash generate pbkdf2 --variant sha512 --password ...`).
+> `offline_access` must be present for any client that requests `refresh_token`.
 
 ## Client Registration
 
@@ -103,7 +111,7 @@ name = Authelia
 allow_sign_up = true
 client_id = grafana
 client_secret = grafana-secret
-scopes = openid profile email
+scopes = openid profile email offline_access
 auth_url = https://auth.example.com/api/oidc/authorization
 token_url = https://auth.example.com/api/oidc/token
 api_url = https://auth.example.com/api/oidc/userinfo
@@ -120,6 +128,7 @@ role_attribute_path = groups
 | profile | User profile | name, preferred_username |
 | email | Email address | email, email_verified |
 | groups | Group membership | groups |
+| offline_access | Enables refresh tokens | (refresh_token issued) |
 
 ## ID Token Claims
 
@@ -193,8 +202,8 @@ Response:
   "authorization_endpoint": "https://auth.example.com/api/oidc/authorization",
   "token_endpoint": "https://auth.example.com/api/oidc/token",
   "userinfo_endpoint": "https://auth.example.com/api/oidc/userinfo",
-  "jwks_uri": "https://auth.example.com/api/oidc/jwks",
-  "scopes_supported": ["openid", "profile", "email", "groups"],
+  "jwks_uri": "https://auth.example.com/jwks.json",
+  "scopes_supported": ["openid", "profile", "email", "groups", "offline_access"],
   "response_types_supported": ["code"],
   "grant_types_supported": ["authorization_code", "refresh_token"],
   "subject_types_supported": ["public"],
@@ -206,7 +215,7 @@ Response:
 ## JWKS (JSON Web Key Set)
 
 ```bash
-curl https://auth.example.com/api/oidc/jwks
+curl https://auth.example.com/jwks.json
 ```
 
 ## Logout

@@ -1,6 +1,6 @@
 # Proxmox Homelab
 
-> A lightweight, security-focused homelab running on a Generic Laptop laptop with 16 GB RAM, demonstrating production-grade infrastructure patterns on constrained hardware.
+> A lightweight, security-focused homelab running on a Generic Laptop with 16 GB RAM, demonstrating production-grade infrastructure patterns on constrained hardware.
 
 ## Overview
 
@@ -90,7 +90,7 @@ proxmox-homelab/
 
 ## Documentation
 
-**Live at**: https://dmaljkovic.github.io/proxmox-homelab/
+**Live at**: https://yourusername.github.io/proxmox-homelab/
 
 Built with MkDocs Material, deployed via GitHub Pages.
 
@@ -122,4 +122,4 @@ MIT License — see [LICENSE](LICENSE)
 
 ## Author
 
-**Maljkovic** — [GitHub](https://github.com/dmaljkovic)
+**yourusername** — [GitHub](https://github.com/yourusername)
