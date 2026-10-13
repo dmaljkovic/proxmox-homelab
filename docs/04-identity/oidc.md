@@ -10,17 +10,18 @@ OpenID Connect (OIDC) is an identity layer on top of OAuth 2.0. Authelia acts as
 User -> Service (Gitea/Grafana)
         |
         v
-    Nginx (auth_request)
-        |
-        v
-    Authelia (OIDC Provider)
+    Authelia (OIDC authorization endpoint)
         |
         v
     OpenLDAP (Authentication)
         |
         v
-    Authelia -> ID Token -> Service
+    Authelia -> authorization code -> ID Token -> Service
 ```
+
+The service sends the user straight to Authelia's authorization endpoint (the
+user's browser is redirected to the Authelia portal). There is no Nginx
+`auth_request` forward-auth in front of the service.
 
 ## Authelia as OIDC Provider
 
@@ -89,16 +90,38 @@ identity_providers:
 
 ### Gitea
 
-1. Admin Panel -> Authentication -> OAuth2
-2. Add OAuth2 Provider:
-   - Name: Authelia
-   - Client ID: gitea
-   - Client Secret: (from Authelia config)
-   - Redirect URI: https://git.example.com/user/oauth2/oidc/callback
-   - OpenID Connect Discovery URL: https://auth.example.com/.well-known/openid-configuration
-   - Scopes: openid profile email groups
-   - Group Attribute Path: groups
-   - Admin Group: admins
+Configure the OAuth2 source from the CLI (`gitea admin auth add-oauth`):
+
+```bash
+gitea admin auth add-oauth \
+  --name oidc \
+  --provider openidConnect \
+  --key gitea \
+  --secret '<PLAINTEXT_CLIENT_SECRET>' \
+  --auto-discover-url https://auth.example.com/.well-known/openid-configuration \
+  --scopes openid --scopes profile --scopes email --scopes groups --scopes offline_access \
+  --group-claim-name groups \
+  --admin-group admins \
+  --skip-local-2fa
+```
+
+The source **name** determines the callback path, so it must match the
+`redirect_uri` registered in Authelia
+(`https://git.example.com/user/oauth2/oidc/callback`).
+
+To allow new users to be created on first OIDC login (and link an existing local
+account with the same email automatically), add to `/etc/gitea/app.ini`:
+
+```ini
+[oauth2_client]
+ENABLE_AUTO_REGISTRATION = true
+ACCOUNT_LINKING = auto
+USERNAME = preferred_username
+```
+
+> The `email` scope is populated from the LDAP `mail` attribute, and Gitea
+> refuses auto-registration when the `email` claim is empty. Every LDAP user must
+> therefore have a `mail` attribute. See [OpenLDAP](openldap.md).
 
 ### Grafana
 
@@ -135,7 +158,7 @@ role_attribute_path = groups
 ```json
 {
   "iss": "https://auth.example.com",
-  "sub": "admin",
+  "sub": "<opaque-subject-id>",
   "aud": "gitea",
   "exp": 1699999999,
   "iat": 1699996399,

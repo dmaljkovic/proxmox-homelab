@@ -43,7 +43,7 @@ graph TB
     Edge --> Tunnel
     Tunnel --> CF
     CF --> Nginx
-    Nginx -.->|auth_request| Authelia
+    Nginx -.->|proxy portal| Authelia
     Authelia -.->|LDAPS| LDAP
     Nginx --> Gitea
     Nginx --> Grafana
@@ -62,10 +62,10 @@ graph TB
 | Component | Role | Port(s) |
 |-----------|------|---------|
 | cloudflared | Encrypted tunnel to Cloudflare | 443 (outbound) |
-| Nginx | TLS termination, routing, auth_request | 80 (internal) |
+| Nginx | TLS termination, reverse proxy routing | 80 (internal) |
 | OpenLDAP | Identity store (users/groups) | 636 (LDAPS) |
 | Authelia | SSO, MFA, OIDC provider | 9091 (internal) |
-| Gitea | Git server, GitHub mirror | 3000 (internal) |
+| Gitea | Git server, OIDC SSO | 3000 (internal) |
 | Grafana | Dashboards, visualization | 3000 (internal) |
 | Prometheus | Metrics collection | 9090 (internal) |
 | Security | Audit/testing tools | Various |
@@ -79,13 +79,12 @@ graph TB
 2. Cloudflare Edge (TLS, WAF)
 3. Cloudflare Tunnel (QUIC, encrypted)
 4. cloudflared (on Proxmox host)
-5. Nginx (10.0.0.10:80)
-6. auth_request → Authelia (10.0.0.30:9091)
-7. Authelia validates session / redirects to login
-8. Authelia → OpenLDAP (10.0.0.20:636) for credentials
-9. Authelia returns 200 + headers (user, groups)
-10. Nginx → proxy_pass → Gitea (10.0.0.40:3000)
-11. Gitea receives authenticated request
+5. Nginx (10.0.0.10:80) → proxy_pass → Gitea (10.0.0.40:3000)
+6. User clicks "Sign In with OIDC"
+7. Browser → Authelia authorization endpoint (10.0.0.30:9091, via auth.example.com)
+8. Authelia → OpenLDAP (10.0.0.20:636) for credentials (+ MFA)
+9. Authelia issues an authorization code → Gitea callback
+10. Gitea exchanges the code and logs the user in; the SSO session persists
 ```
 
 ### Metrics Collection
@@ -130,13 +129,11 @@ Encrypted Tunnel (outbound only)
     ▼
 Nginx (only service reachable via tunnel)
     │
-    ├── auth_request → Authelia
-    │       │
-    │       └── LDAPS → OpenLDAP
+    ├── proxy → Authelia portal → LDAPS → OpenLDAP
     │
-    ├── proxy_pass → Gitea
+    ├── proxy_pass → Gitea   (SSO via Authelia OIDC)
     │
-    └── proxy_pass → Grafana
+    └── proxy_pass → Grafana (SSO via Authelia OIDC)
 
 All other services: NO direct external access
 ```

@@ -40,7 +40,7 @@ Status: active
 |--------|-------------|------|-------|---------|
 | Nginx (101) | Gitea (104) | 3000 | TCP | Reverse proxy |
 | Nginx (101) | Grafana (105) | 3000 | TCP | Reverse proxy |
-| Nginx (101) | Authelia (103) | 9091 | TCP | auth_request |
+| Nginx (101) | Authelia (103) | 9091 | TCP | Auth portal proxy |
 | Authelia (103) | LDAP (102) | 636 | TCP | LDAPS bind |
 | Gitea (104) | Authelia (103) | 443 | TCP | OIDC discovery |
 | Grafana (105) | Authelia (103) | 443 | TCP | OIDC discovery |

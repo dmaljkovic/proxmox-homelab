@@ -27,7 +27,7 @@ graph TB
     Edge --> Tunnel
     Tunnel -.->|Encrypted| CF
     CF --> Nginx
-    Nginx -.->|auth_request| Authelia
+    Nginx -.->|proxy portal| Authelia
     Authelia -.->|LDAPS| LDAP
     Nginx --> Gitea
     Nginx --> Grafana

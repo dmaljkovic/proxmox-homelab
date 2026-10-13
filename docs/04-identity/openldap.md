@@ -153,12 +153,26 @@ sn: Admin
 uidNumber: 1000
 gidNumber: 1000
 homeDirectory: /home/admin
+mail: admin@example.com
 userPassword: {SSHA}...
 
 # Groups
 cn=developers,ou=groups,dc=example,dc=com
 cn=admins,ou=groups,dc=example,dc=com
 ```
+
+> **`mail` is required for OIDC.** Authelia maps the LDAP `mail` attribute to the
+> OIDC `email` claim (`attributes.mail: mail`), and services like Gitea reject
+> OIDC auto-registration when that claim is empty. To add it to an existing user:
+>
+> ```bash
+> ldapmodify -x -D "cn=admin,dc=example,dc=com" -W << 'EOF'
+> dn: uid=admin,ou=people,dc=example,dc=com
+> changetype: modify
+> add: mail
+> mail: admin@example.com
+> EOF
+> ```
 
 ## Access Control (ACLs)
 

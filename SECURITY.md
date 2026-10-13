@@ -39,13 +39,13 @@ Security issues: Create a GitHub Security Advisory.
 | SSH | Key-only, root prohibited, fail2ban |
 | Web auth | Authelia OIDC + TOTP MFA |
 | Internal auth | LDAPS (636) only |
-| Reverse proxy | Nginx auth_request → Authelia |
+| Reverse proxy | Nginx reverse proxy (SSO via Authelia OIDC in-app) |
 | Headers | CSP, HSTS, X-Frame-Options, etc. |
 | Rate limiting | Nginx + Cloudflare |
 | Secrets | SOPS/age (encrypted in repo) |
 | Updates | unattended-upgrades (security) |
 | Monitoring | Prometheus + Grafana alerts |
-| Backups | Encrypted, off-site (GitHub mirror) |
+| Backups | Encrypted, off-site |
 
 ## Threat Model
 
@@ -65,7 +65,7 @@ Security issues: Create a GitHub Security Advisory.
 ## Hardening Checklist
 
 - [ ] Proxmox: SSH key-only, UFW, fail2ban, auto-updates
-- [ ] Nginx: Security headers, rate limiting, auth_request
+- [ ] Nginx: Security headers, rate limiting, reverse proxy only
 - [ ] Authelia: MFA required, session hardening, regulation
 - [ ] OpenLDAP: LDAPS only, ppolicy, ACLs
 - [ ] Gitea: OIDC only, no local auth, signed commits
