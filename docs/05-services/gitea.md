@@ -21,10 +21,11 @@ Gitea is a lightweight, self-hosted Git service written in Go. It provides Git h
 pct enter 104
 
 # Inside container
-apt update && apt install -y git sqlite3
+apt update && apt install -y git sqlite3 ca-certificates
 
-# Download Gitea binary (latest)
-wget -O /usr/local/bin/gitea https://dl.gitea.io/gitea/1.22.0/gitea-1.22.0-linux-amd64
+# Download the Gitea binary (version.json lists the latest release)
+VER=28.1.0
+wget -O /usr/local/bin/gitea https://dl.gitea.com/gitea/${VER}/gitea-${VER}-linux-amd64
 chmod +x /usr/local/bin/gitea
 
 # Create git user
@@ -47,13 +48,16 @@ chmod 770 /etc/gitea
 APP_NAME = Gitea
 RUN_USER = git
 RUN_MODE = prod
+WORK_PATH = /var/lib/gitea
+PROTOCOL = http
 DOMAIN = git.example.com
 ROOT_URL = https://git.example.com/
-SSH_DOMAIN = git.example.com
-SSH_PORT = 22
+HTTP_ADDR = 0.0.0.0
+HTTP_PORT = 3000
+DISABLE_SSH = true
+OFFLINE_MODE = true
 LFS_START_SERVER = true
-LFS_CONTENT_PATH = /var/lib/gitea/data/lfs
-OFFLINE_MODE = false
+LFS_JWT_SECRET = GENERATE_WITH_openssl_rand_base64_32
 
 [database]
 DB_TYPE = sqlite3
@@ -72,25 +76,22 @@ INSTALL_LOCK = true
 SECRET_KEY = GENERATE_WITH_openssl_rand_base64_32
 INTERNAL_TOKEN = GENERATE_WITH_openssl_rand_base64_32
 PASSWORD_HASH_ALGO = pbkdf2
-LOGIN_REMEMBER_DAYS = 7
-COOKIE_USERNAME = gitea_awesome
-COOKIE_REMEMBER_NAME = gitea_incredible
+
+[service]
+DISABLE_REGISTRATION = true
+REQUIRE_SIGNIN_VIEW = true
+REGISTER_EMAIL_CONFIRM = false
+ENABLE_NOTIFY_MAIL = false
+DEFAULT_KEEP_EMAIL_PRIVATE = false
 
 [oauth2]
 ENABLED = true
 JWT_SECRET = GENERATE_WITH_openssl_rand_base64_32
 
-[auth.openid]
-ENABLED = true
-
-[service]
-DISABLE_REGISTRATION = false
-REQUIRE_SIGNIN_VIEW = true
-DEFAULT_KEEP_EMAIL_PRIVATE = false
-ENABLE_NOTIFY_MAIL = false
-
-[mailer]
-ENABLED = false
+[oauth2_client]
+ENABLE_AUTO_REGISTRATION = true
+ACCOUNT_LINKING = auto
+USERNAME = preferred_username
 
 [session]
 PROVIDER = file
@@ -99,28 +100,56 @@ PROVIDER_CONFIG = /var/lib/gitea/data/sessions
 [cache]
 ADAPTER = memory
 
-[indexer]
-ISSUE_INDEXER_TYPE = bleve
+[mailer]
+ENABLED = false
 ```
+
+Notes:
+
+- `DISABLE_SSH = true` and only the internal Nginx may reach `:3000`, so Git is
+  served over **HTTPS only** (authenticate with an app token).
+- `REQUIRE_SIGNIN_VIEW = true` makes the instance private; the `/api/health`
+  probe returns the sign-in page instead of JSON, so check the port/HTTP status
+  rather than that endpoint.
+- `[oauth2_client]` enables first-login auto-registration and account linking; see
+  [OIDC Configuration](../04-identity/oidc.md).
 
 ## OIDC Configuration (Authelia)
 
-```ini
-[oauth2]
-ENABLED = true
+Gitea is registered as an OIDC client in Authelia (`client_id: gitea`), and the
+OAuth2 source is added on the Gitea side. Both can be created from the CLI.
 
-[auth.openid]
-ENABLED = true
+```bash
+# Run as the git user (Gitea refuses to run admin commands as root)
+su -s /bin/bash git -c \
+  'gitea -w /var/lib/gitea -c /etc/gitea/app.ini admin auth add-oauth \
+     --name oidc \
+     --provider openidConnect \
+     --key gitea \
+     --secret "<PLAINTEXT_CLIENT_SECRET>" \
+     --auto-discover-url https://auth.example.com/.well-known/openid-configuration \
+     --scopes openid --scopes profile --scopes email --scopes groups --scopes offline_access \
+     --group-claim-name groups \
+     --admin-group admins \
+     --skip-local-2fa'
+```
 
-# In Gitea UI: Admin Panel -> Authentication -> OAuth2 -> Add Provider
-# Name: Authelia
-# Client ID: gitea
-# Client Secret: (from Authelia config)
-# Redirect URI: https://git.example.com/user/oauth2/oidc/callback
-# OpenID Connect Discovery URL: https://auth.example.com/.well-known/openid-configuration
-# Scopes: openid profile email groups
-# Group Attribute Path: groups
-# Admin Group: admins
+Key points:
+
+- The source **name** (`oidc`) must match the `redirect_uri` registered in
+  Authelia: `https://git.example.com/user/oauth2/oidc/callback`.
+- `--admin-group admins` maps Authelia's `groups` claim to Gitea administrators.
+- `--skip-local-2fa` defers two-factor to Authelia (already required there).
+- `offline_access` is required because the client requests refresh tokens.
+
+Create the first administrator before the first SSO login (a pre-existing local
+account with the same email is linked automatically on first OIDC login):
+
+```bash
+su -s /bin/bash git -c \
+  'gitea -w /var/lib/gitea -c /etc/gitea/app.ini admin user create \
+     --username admin --email admin@example.com --admin \
+     --random-password --must-change-password=false'
 ```
 
 ## Systemd Service
@@ -151,11 +180,15 @@ systemctl enable --now gitea
 systemctl status gitea
 ```
 
-## GitHub Mirror (Push Mirror)
+## GitHub Mirror (Push Mirror) — Optional
 
-1. **Create GitHub Personal Access Token:**
-   - Settings -> Developer settings -> Personal access tokens -> Classic
-   - Scopes: `repo` (full control of private repos)
+> **Not enabled in this build.** Publishing the documentation to GitHub Pages is
+> done by pushing directly from the workstation; a Gitea push mirror is an
+> optional addition.
+
+1. **Create a GitHub Personal Access Token:**
+   - Settings -> Developer settings -> Personal access tokens -> Fine-grained
+   - Repository access: the target repo only; Permissions: `Contents: Read and write`
    - Copy token
 
 2. **Configure Push Mirror in Gitea:**
@@ -171,29 +204,25 @@ systemctl status gitea
    # Verify on GitHub
    ```
 
-## SSH Access (Optional)
+## SSH Access (Not used)
 
-```bash
-# Generate SSH key for Gitea
-ssh-keygen -t ed25519 -f /home/git/.ssh/id_ed25519 -N ""
-
-# Add public key to GitHub Deploy Keys
-cat /home/git/.ssh/id_ed25519.pub
-```
+This build serves Git over **HTTPS only** (`DISABLE_SSH = true`), so no SSH keys
+are needed for clients. (If the optional push mirror were enabled, an outbound
+deploy key for GitHub would be generated here.)
 
 ## Firewall
 
 ```bash
 ufw allow from 10.0.0.10 to any port 3000 proto tcp
-ufw allow from 10.0.0.10 to any port 22 proto tcp
 ufw reload
 ```
 
 ## Backup
 
 ```bash
-# Gitea built-in dump
-gitea dump -c /etc/gitea/app.ini -o /backup/gitea-$(date +%F).zip
+# Gitea built-in dump (run as the git user, with explicit work dir/config)
+su -s /bin/bash git -c \
+  'gitea -w /var/lib/gitea -c /etc/gitea/app.ini dump -o /var/lib/gitea/data/backup'
 
 # Or via UI: Admin Panel -> Administration -> Backup
 ```
@@ -201,14 +230,15 @@ gitea dump -c /etc/gitea/app.ini -o /backup/gitea-$(date +%F).zip
 ## Verification
 
 ```bash
-# Health check
-curl -s http://10.0.0.40:3000/healthz
+# Health check (any 200 HTML is fine; REQUIRE_SIGNIN_VIEW makes /api/health
+# return the sign-in page rather than JSON)
+curl -s -o /dev/null -w '%{http_code}\n' http://10.0.0.40:3000/
 
 # Via Nginx/Cloudflare
 curl -I https://git.example.com
 
 # Test OIDC login
-# Visit https://git.example.com -> should redirect to Authelia
+# Visit https://git.example.com -> "Sign In with OIDC" -> Authelia
 ```
 
 ## References

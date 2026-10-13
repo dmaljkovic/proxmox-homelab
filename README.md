@@ -14,7 +14,7 @@ graph TB
     CF --> Tunnel[Cloudflare Tunnel]
     Tunnel --> CFD[cloudflared on Host]
     CFD --> Nginx[Nginx LXC<br/>10.0.0.10]
-    Nginx -.->|auth_request| Authelia[Authelia LXC<br/>10.0.0.30]
+    Nginx -.->|proxy portal| Authelia[Authelia LXC<br/>10.0.0.30]
     Authelia -.->|LDAPS| LDAP[OpenLDAP LXC<br/>10.0.0.20]
     Nginx --> Gitea[Gitea LXC<br/>10.0.0.40]
     Nginx --> Grafana[Grafana LXC<br/>10.0.0.50]
@@ -45,7 +45,7 @@ graph TB
 
 | Service | Purpose |
 |---------|---------|
-| Gitea | Git hosting, GitHub mirror |
+| Gitea | Git hosting (OIDC SSO) |
 | Grafana | Dashboards, visualization |
 | Authelia | SSO portal, MFA |
 | Prometheus | Metrics collection |
@@ -108,7 +108,7 @@ See [Proxmox Installation](docs/02-proxmox/installation.md) for initial setup.
 | 2 | Nginx reverse proxy |
 | 3 | OpenLDAP identity store |
 | 4 | Authelia SSO/OIDC |
-| 5 | Gitea + GitHub mirror |
+| 5 | Gitea (OIDC SSO); GitHub mirror optional |
 | 6 | Prometheus monitoring |
 | 7 | Grafana dashboards |
 | 8 | Security LXC + auditing |

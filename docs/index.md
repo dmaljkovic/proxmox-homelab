@@ -38,7 +38,7 @@ graph TB
     User[Internet User] --> CF[Cloudflare Edge]
     CF --> Tunnel[Cloudflare Tunnel]
     Tunnel --> Nginx[Nginx LXC 101<br/>10.0.0.10]
-    Nginx -.->|auth_request| Authelia[Authelia LXC 103<br/>10.0.0.30]
+    Nginx -.->|proxy portal| Authelia[Authelia LXC 103<br/>10.0.0.30]
     Authelia -.->|LDAPS| LDAP[OpenLDAP LXC 102<br/>10.0.0.20]
     Nginx --> Gitea[Gitea LXC 104<br/>10.0.0.40]
     Nginx --> Grafana[Grafana LXC 105<br/>10.0.0.50]

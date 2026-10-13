@@ -3,9 +3,9 @@
 ## Overview
 
 Authelia provides Single Sign-On (SSO), second-factor and OpenID Connect (OIDC)
-for the homelab. It authenticates users against OpenLDAP and protects reverse
-proxied services through Nginx `auth_request`. Services such as Gitea and Grafana
-use Authelia as their OIDC provider.
+for the homelab. It authenticates users against OpenLDAP and acts as the OIDC
+provider for services such as Gitea and Grafana, which perform SSO
+in-application (there is no Nginx `auth_request` forward-auth).
 
 ## Deployment
 
@@ -194,6 +194,16 @@ The plaintext client secret is configured in the client (Gitea/Grafana); the
 > The `offline_access` scope is required whenever a client requests the
 > `refresh_token` grant, otherwise Authelia logs a warning.
 
+## Notifier (no mail server)
+
+The lab has no SMTP server. Authelia's `notifier.filesystem` writes every
+notification (password resets, identity-verification one-time codes, 2FA
+prompts) to a file on LXC 103. Retrieve one-time codes from there:
+
+```bash
+pct exec 103 -- cat /var/lib/authelia/notification.txt
+```
+
 ## Trust the LDAP CA
 
 Authelia verifies the LDAPS server certificate. Because OpenLDAP uses a
@@ -241,15 +251,16 @@ su -s /bin/bash -c \
 
 ## Nginx Integration
 
-Nginx (LXC 101) proxies public traffic and calls Authelia's `/api/verify`
-endpoint via `auth_request`. See `docs/05-services/nginx.md` for the full vhosts.
+Nginx (LXC 101) proxies all public traffic. The service vhosts (`git`,
+`grafana`) are plain reverse proxies: those apps run their own OIDC login
+against Authelia. Nginx only proxies the Authelia portal itself
+(`auth.example.com` -> `10.0.0.30:9091`). See `docs/05-services/nginx.md` for
+the full vhosts.
 
-Two details are essential when Nginx sits behind the Cloudflare Tunnel:
-
-1. The tunnel terminates TLS and forwards `X-Forwarded-Proto: https`, but Nginx
-   only sees plain HTTP. A `map` restores the real scheme.
-2. Authelia refuses `http` target URLs, so `X-Original-URL` and the redirect must
-   use the recovered scheme.
+One detail is essential when Nginx sits behind the Cloudflare Tunnel: the tunnel
+terminates TLS and forwards `X-Forwarded-Proto: https`, but Nginx only sees plain
+HTTP. A `map` restores the real scheme so the portal builds correct absolute URLs
+and the OIDC issuer stays `https://auth.example.com`.
 
 ```nginx
 # /etc/nginx/nginx.conf (http context)
@@ -259,24 +270,18 @@ map $http_x_forwarded_proto $forwarded_scheme {
 }
 ```
 
-```nginx
-# Example protected vhost
-location / {
-    auth_request /auth;
-    auth_request_set $user $upstream_http_remote_user;
-    auth_request_set $groups $upstream_http_remote_groups;
-    error_page 401 =302 https://auth.example.com/?rd=$forwarded_scheme://$host$request_uri;
-    proxy_pass http://10.0.0.40:3000;
-    proxy_set_header X-Forwarded-Proto $forwarded_scheme;
-}
+Plain reverse proxy vhost (Gitea):
 
-location = /auth {
-    internal;
-    proxy_pass http://10.0.0.30:9091/api/verify;
-    proxy_pass_request_body off;
-    proxy_set_header Content-Length "";
-    proxy_set_header X-Original-URL $forwarded_scheme://$host$request_uri;
-    proxy_set_header X-Original-Method $request_method;
+```nginx
+location / {
+    proxy_pass http://10.0.0.40:3000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $forwarded_scheme;
+    proxy_set_header X-Forwarded-Host $host;
+    proxy_set_header X-Forwarded-Server $host;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
 }
 ```
 
@@ -298,9 +303,9 @@ curl -s http://10.0.0.30:9091/api/health
 curl -s https://auth.example.com/api/health
 curl -s https://auth.example.com/.well-known/openid-configuration
 
-# Protected service should redirect to the portal
+# Service vhosts serve the app directly (login happens in-app via OIDC)
 curl -I https://git.example.com
-# HTTP/2 302 ... location: https://auth.example.com/?rd=https://git.example.com/
+# HTTP/2 200 ... (Gitea sign-in page)
 ```
 
 ## Backup

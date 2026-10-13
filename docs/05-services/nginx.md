@@ -4,18 +4,21 @@
 
 - TLS termination (at Cloudflare edge)
 - Reverse proxy for all web services
-- `auth_request` integration with Authelia
 - Host-based routing (git, grafana, auth)
 - Security headers
+
+Gitea and Grafana perform SSO **in-application** against Authelia's OIDC
+provider, so Nginx no longer calls Authelia's `/api/verify` via `auth_request`.
+Each service vhost is a plain reverse proxy.
 
 ## Architecture
 
 ```
 Cloudflare -> cloudflared -> Nginx (10.0.0.10:80)
     |
-    |-- git.example.com -> auth_request -> Authelia -> proxy_pass -> Gitea (10.0.0.40:3000)
-    |-- grafana.example.com -> auth_request -> Authelia -> proxy_pass -> Grafana (10.0.0.50:3000)
-    |-- auth.example.com -> proxy_pass -> Authelia portal (10.0.0.30:9091)
+    |-- git.example.com      -> proxy_pass -> Gitea   (10.0.0.40:3000)  [OIDC via Authelia]
+    |-- grafana.example.com  -> proxy_pass -> Grafana (10.0.0.50:3000)  [OIDC via Authelia]
+    |-- auth.example.com     -> proxy_pass -> Authelia portal (10.0.0.30:9091)
 ```
 
 ## Installation (LXC 101)
@@ -117,22 +120,13 @@ server {
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'self';" always;
 
-    # Auth request to Authelia
+    # Plain reverse proxy - Gitea authenticates the user in-app via Authelia OIDC
     location / {
-        auth_request /auth;
-        auth_request_set $user $upstream_http_remote_user;
-        auth_request_set $groups $upstream_http_remote_groups;
-        auth_request_set $email $upstream_http_remote_email;
-        error_page 401 =302 https://auth.example.com/?rd=$forwarded_scheme://$host$request_uri;
-
         proxy_pass http://10.0.0.40:3000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $forwarded_scheme;
-        proxy_set_header Remote-User $user;
-        proxy_set_header Remote-Groups $groups;
-        proxy_set_header Remote-Email $email;
         proxy_set_header X-Forwarded-Host $host;
         proxy_set_header X-Forwarded-Server $host;
         
@@ -142,19 +136,7 @@ server {
         proxy_set_header Connection "upgrade";
     }
 
-    # Internal auth endpoint
-    location = /auth {
-        internal;
-        proxy_pass http://10.0.0.30:9091/api/verify;
-        proxy_pass_request_body off;
-        proxy_set_header Content-Length "";
-        proxy_set_header X-Original-URL $forwarded_scheme://$host$request_uri;
-        proxy_set_header X-Original-Method $request_method;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $forwarded_scheme;
-    }
-
-    # Health check (no auth)
+    # Health check
     location /healthz {
         access_log off;
         return 200 "healthy\n";
@@ -176,21 +158,13 @@ server {
     add_header X-XSS-Protection "1; mode=block" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 
+    # Plain reverse proxy - Grafana authenticates the user in-app via Authelia OIDC
     location / {
-        auth_request /auth;
-        auth_request_set $user $upstream_http_remote_user;
-        auth_request_set $groups $upstream_http_remote_groups;
-        auth_request_set $email $upstream_http_remote_email;
-        error_page 401 =302 https://auth.example.com/?rd=$forwarded_scheme://$host$request_uri;
-
         proxy_pass http://10.0.0.50:3000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $forwarded_scheme;
-        proxy_set_header Remote-User $user;
-        proxy_set_header Remote-Groups $groups;
-        proxy_set_header Remote-Email $email;
         
         # WebSocket for live updates
         proxy_http_version 1.1;
@@ -200,15 +174,6 @@ server {
         # Timeouts
         proxy_read_timeout 300s;
         proxy_send_timeout 300s;
-    }
-
-    location = /auth {
-        internal;
-        proxy_pass http://10.0.0.30:9091/api/verify;
-        proxy_pass_request_body off;
-        proxy_set_header Content-Length "";
-        proxy_set_header X-Original-URL $forwarded_scheme://$host$request_uri;
-        proxy_set_header X-Original-Method $request_method;
     }
 
     location /healthz {
@@ -226,7 +191,7 @@ server {
     listen 80;
     server_name auth.example.com;
 
-    # No auth_request here - this IS the auth portal
+    # This IS the Authelia portal (no forward-auth here)
     location / {
         proxy_pass http://10.0.0.30:9091;
         proxy_set_header Host $host;
@@ -274,8 +239,8 @@ nginx -t
 ss -tlnp | grep :80
 
 # Test locally
-curl -H "Host: git.example.com" http://10.0.0.10:80
-# Should return 302 redirect to the Authelia portal (unauthenticated)
+curl -I -H "Host: git.example.com" http://10.0.0.10:80
+# 200 from Gitea (its sign-in page); authentication then happens via Authelia OIDC
 
 # Test via Cloudflare tunnel
 curl -I https://git.example.com
