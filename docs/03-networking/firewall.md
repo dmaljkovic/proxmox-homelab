@@ -107,8 +107,8 @@ backend = systemd
 
 ```bash
 # Test from LAN (should work)
-ssh root@10.0.0.100
-curl https://10.0.0.100:8006
+ssh root@10.0.0.99
+curl https://10.0.0.99:8006
 
 # Test from internet (should fail)
 # nmap -p 22,80,443,8006 <public-ip>

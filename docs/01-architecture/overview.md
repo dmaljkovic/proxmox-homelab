@@ -25,7 +25,7 @@ graph TB
     end
     
     subgraph "Generic Laptop (10.0.0.0/24)"
-        Host[Proxmox VE Host<br/>10.0.0.100]
+        Host[Proxmox VE Host<br/>10.0.0.99]
         
         subgraph "vmbr0 Bridge"
             CF[cloudflared<br/>on Host]
@@ -97,7 +97,7 @@ Prometheus (10.0.0.60:9090) scrapes:
 - Grafana: 10.0.0.50:3000/metrics
 - Authelia: 10.0.0.30:9091/metrics
 - OpenLDAP: 10.0.0.20:9187 (ldap-exporter)
-- Node Exporter: 10.0.0.100:9100 (on Proxmox host)
+- Node Exporter: 10.0.0.99:9100 (on Proxmox host)
 - All LXCs: 10.0.0.x:9100 (node_exporter in each)
 ```
 
