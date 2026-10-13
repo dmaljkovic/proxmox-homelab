@@ -39,24 +39,9 @@ Total RAM: 16 GB
 │   └── templates/ISOs: ~10 GB
 ```
 
-## Planned Storage Upgrade
-
-| Priority | Upgrade | Purpose |
-|----------|---------|---------|
-| 1 | 2.5" SATA SSD (500 GB - 1 TB) | Backups, Gitea data, Prometheus retention |
-| 2 | Larger M.2 NVMe (500 GB - 1 TB) | Root + containers, replace 128 GB |
-
 ## Power & Thermal
 
 - **Idle**: ~15-20 W
 - **Load**: ~45-65 W (CPU + containers)
 - **Thermal**: Adequate for 24/7 operation (clean fans, replace paste if needed)
 - **UPS**: Not currently used (laptop battery = built-in UPS)
-
-## Why This Hardware Works
-
-- **16 GB RAM**: Comfortable for 7 LXCs + host + cache
-- **4C/8T CPU**: Handles concurrent compiles, Prometheus scraping, Git operations
-- **Ethernet**: Stable, low-latency bridge networking
-- **M.2 + 2.5" bay**: Upgrade path for storage
-- **Laptop form factor**: Built-in battery (UPS), low power, quiet
