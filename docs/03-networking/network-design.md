@@ -121,28 +121,6 @@ ufw allow out 443 proto tcp  # cloudflared to Cloudflare
 # NO inbound 80/443 - tunnel handles all external traffic
 ```
 
-## Internal LXC Firewall (Conceptual)
-
-| Source | Destination | Port | Purpose |
-|--------|-------------|------|---------|
-| Nginx (101) | Gitea (104) | 3000 | Reverse proxy |
-| Nginx (101) | Grafana (105) | 3000 | Reverse proxy |
-| Nginx (101) | Authelia (103) | 9091 | auth_request |
-| Authelia (103) | LDAP (102) | 636 | LDAPS bind |
-| Gitea (104) | Authelia (103) | 443 | OIDC discovery |
-| Grafana (105) | Authelia (103) | 443 | OIDC discovery |
-| Prometheus (106) | All | 9090,9100,etc | Metrics scrape |
-| Security (107) | All | Various | Testing/audit |
-
-## DNS Records (Cloudflare)
-
-| Name | Type | Target | Proxy |
-|------|------|--------|-------|
-| proxmox | A | 10.0.0.99 | DNS Only (grey) |
-| git | CNAME | `<tunnel-id>.cfargotunnel.com` | Proxied (orange) |
-| grafana | CNAME | `<tunnel-id>.cfargotunnel.com` | Proxied (orange) |
-| auth | CNAME | `<tunnel-id>.cfargotunnel.com` | Proxied (orange) |
-
 ## Why This Design?
 
 - **Single bridge (vmbr0)**: Simple, all LXCs on same L2 segment
