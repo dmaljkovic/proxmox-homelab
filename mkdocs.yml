@@ -1,5 +1,5 @@
 site_name: Proxmox Homelab
-site_url: https://yourusername.github.io/proxmox-homelab/
+site_url: https://dmaljkovic.github.io/proxmox-homelab/
 theme:
   name: material
   palette:

@@ -90,7 +90,7 @@ proxmox-homelab/
 
 ## Documentation
 
-**Live at**: https://yourusername.github.io/proxmox-homelab/
+**Live at**: https://dmaljkovic.github.io/proxmox-homelab/
 
 Built with MkDocs Material, deployed via GitHub Pages.
 
