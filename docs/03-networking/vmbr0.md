@@ -79,35 +79,3 @@ for i in {101..107}; do pct exec $i -- ip -br a; done
 pct exec 101 -- ping -c 2 10.0.0.20
 pct exec 101 -- ping -c 2 10.0.0.1
 ```
-
-## Bridge vs VLAN
-
-**Current: Single flat bridge (vmbr0)**
-- All containers on same L2 segment
-- Simple, no VLAN trunking needed
-- Good for small deployments
-
-**Future: VLAN segmentation (Phase 2)**
-```
-vmbr0.10  -> Management (Proxmox, DNS)
-vmbr0.20  -> Services (Nginx, Gitea, Grafana)
-vmbr0.30  -> Identity (LDAP, Authelia)
-vmbr0.40  -> Monitoring (Prometheus)
-vmbr0.50  -> Security (audit tools)
-```
-Requires VLAN-aware switch and trunk port on `eno1`.
-
-## Troubleshooting
-
-```bash
-# Bridge not coming up
-systemctl status networking
-journalctl -u networking
-
-# LXC can't reach gateway
-pct exec 101 -- ip route
-pct exec 101 -- ip neigh
-
-# MAC address conflicts
-# Ensure hwaddr is unique per container
-```
