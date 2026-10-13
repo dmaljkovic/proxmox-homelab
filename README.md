@@ -119,7 +119,3 @@ See [Proxmox Installation](docs/02-proxmox/installation.md) for initial setup.
 ## License
 
 MIT License — see [LICENSE](LICENSE)
-
-## Author
-
-**yourusername** — [GitHub](https://github.com/yourusername)
