@@ -24,6 +24,9 @@ ansible/vault/
 configs/*/production/
 configs/*/secrets/
 
+# Sanitization reference (local-only; must NOT be public)
+SANITIZATION_RULES.md
+
 # OS/Editor
 .DS_Store
 Thumbs.db
