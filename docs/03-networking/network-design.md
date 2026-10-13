@@ -18,7 +18,7 @@ graph TB
         DNS[Local DNS<br/>10.0.0.100]
         
         subgraph "Proxmox Host"
-            Host[Proxmox VE<br/>10.0.0.100]
+            Host[Proxmox VE<br/>10.0.0.99]
             CF[cloudflared]
             vmbr0[vmbr0 Bridge]
         end
@@ -56,7 +56,7 @@ graph TB
 |--------|-----|-----|-------|
 | Home Router | 10.0.0.1 | - | Gateway, DHCP server |
 | Local DNS (Pi-hole) | 10.0.0.100 | - | Internal DNS |
-| Proxmox Host | 10.0.0.100 | `aa:bb:cc:dd:ee:ff` | Static / DHCP reservation |
+| Proxmox Host | 10.0.0.99 | `aa:bb:cc:dd:ee:ff` | Static / DHCP reservation |
 | Nginx (LXC 101) | 10.0.0.10 | `aa:bb:cc:dd:ee:01` | Static |
 | OpenLDAP (LXC 102) | 10.0.0.20 | `aa:bb:cc:dd:ee:02` | Static |
 | Authelia (LXC 103) | 10.0.0.30 | `aa:bb:cc:dd:ee:03` | Static |
@@ -76,7 +76,7 @@ iface eno1 inet manual
 
 auto vmbr0
 iface vmbr0 inet static
-    address 10.0.0.100/24
+    address 10.0.0.99/24
     gateway 10.0.0.1
     bridge-ports eno1
     bridge-stp off
@@ -138,7 +138,7 @@ ufw allow out 443 proto tcp  # cloudflared to Cloudflare
 
 | Name | Type | Target | Proxy |
 |------|------|--------|-------|
-| proxmox | A | 10.0.0.100 | DNS Only (grey) |
+| proxmox | A | 10.0.0.99 | DNS Only (grey) |
 | git | CNAME | `<tunnel-id>.cfargotunnel.com` | Proxied (orange) |
 | grafana | CNAME | `<tunnel-id>.cfargotunnel.com` | Proxied (orange) |
 | auth | CNAME | `<tunnel-id>.cfargotunnel.com` | Proxied (orange) |

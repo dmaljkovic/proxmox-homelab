@@ -12,7 +12,7 @@ Internet -> Cloudflare Edge -> Tunnel (QUIC/443) -> cloudflared (Proxmox host) -
 
 - Cloudflare account with `example.com` zone
 - Domain already on Cloudflare (nameservers pointing to Cloudflare)
-- Proxmox host at `10.0.0.100` with outbound internet access
+- Proxmox host at `10.0.0.99` with outbound internet access
 - Nginx LXC planned at `10.0.0.10:80`
 
 ## Step 1: Install cloudflared on Your PC
@@ -112,8 +112,8 @@ apt update && apt install -y cloudflared
 
 # Copy credentials and config
 mkdir -p /etc/cloudflared
-scp ~/.cloudflared/<TUNNEL_ID>.json root@10.0.0.100:/etc/cloudflared/
-scp ~/.cloudflared/config.yml root@10.0.0.100:/etc/cloudflared/
+scp ~/.cloudflared/<TUNNEL_ID>.json root@10.0.0.99:/etc/cloudflared/
+scp ~/.cloudflared/config.yml root@10.0.0.99:/etc/cloudflared/
 
 # Install as systemd service
 cloudflared service install
@@ -179,7 +179,7 @@ journalctl -u cloudflared -n 50
 ### 502 Bad Gateway
 ```bash
 # Check Nginx is running on 10.0.0.10:80
-ssh root@10.0.0.100
+ssh root@10.0.0.99
 ssh root@10.0.0.10 "systemctl status nginx"
 curl http://10.0.0.10:80
 ```

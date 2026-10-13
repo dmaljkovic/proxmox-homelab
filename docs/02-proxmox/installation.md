@@ -40,7 +40,7 @@ sync
    - *Will disable password auth after SSH key setup*
 7. **Network Configuration**
    - Interface: `eno1` (Ethernet)
-   - IP: `10.0.0.100/24` (static)
+   - IP: `10.0.0.99/24` (static)
    - Gateway: `10.0.0.1`
    - DNS: `10.0.0.100` (Pi-hole) + `1.1.1.1` fallback
    - Hostname: `proxmox.example.com`
@@ -51,12 +51,12 @@ sync
 
 ```bash
 # From your PC
-ssh root@10.0.0.100
+ssh root@10.0.0.99
 # Should prompt for password (first time)
 
 # Check network
 ip a show vmbr0
-# Should show 10.0.0.100/24 on vmbr0
+# Should show 10.0.0.99/24 on vmbr0
 
 # Check DNS
 cat /etc/resolv.conf
@@ -73,10 +73,10 @@ cat /etc/resolv.conf
 ssh-keygen -t ed25519 -C "your@email.com"
 
 # Copy to Proxmox
-ssh-copy-id root@10.0.0.100
+ssh-copy-id root@10.0.0.99
 
 # Test key-only login
-ssh root@10.0.0.100
+ssh root@10.0.0.99
 ```
 
 ### 2. Harden SSH
@@ -169,12 +169,12 @@ systemctl list-units --type=service --state=running
 
 ## Verification Checklist
 
-- [ ] SSH key-only login works: `ssh root@10.0.0.100`
-- [ ] Proxmox GUI: `https://10.0.0.100:8006` (LAN only)
+- [ ] SSH key-only login works: `ssh root@10.0.0.99`
+- [ ] Proxmox GUI: `https://10.0.0.99:8006` (LAN only)
 - [ ] `ufw status` shows only 22/8006 from 10.0.0.0/24
 - [ ] `systemctl status fail2ban` → active
 - [ ] `chronyc tracking` → synchronized
-- [ ] `ip a` shows vmbr0 with 10.0.0.100/24
+- [ ] `ip a` shows vmbr0 with 10.0.0.99/24
 - [ ] No password auth possible (test from another machine)
 
 ## Next Steps

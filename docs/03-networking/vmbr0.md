@@ -17,7 +17,7 @@ iface eno1 inet manual
 
 auto vmbr0
 iface vmbr0 inet static
-    address 10.0.0.100/24
+    address 10.0.0.99/24
     gateway 10.0.0.1
     bridge-ports eno1
     bridge-stp off
@@ -33,7 +33,7 @@ iface vmbr0 inet static
 | `bridge-ports eno1` | Physical NIC | Binds bridge to physical Ethernet |
 | `bridge-stp off` | Disabled | No Spanning Tree Protocol needed |
 | `bridge-fd 0` | 0 seconds | No forwarding delay |
-| `address` | 10.0.0.100/24 | Proxmox host IP on bridge |
+| `address` | 10.0.0.99/24 | Proxmox host IP on bridge |
 | `gateway` | 10.0.0.1 | Upstream router |
 
 ## LXC Network Configuration
