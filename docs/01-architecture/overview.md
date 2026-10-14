@@ -91,14 +91,15 @@ graph TB
 
 ```
 Prometheus (10.0.0.60:9090) scrapes:
-- Nginx: 10.0.0.10:9113 (nginx-prometheus-exporter)
-- Gitea: 10.0.0.40:3000/metrics
-- Grafana: 10.0.0.50:3000/metrics
-- Authelia: 10.0.0.30:9091/metrics
-- OpenLDAP: 10.0.0.20:9187 (ldap-exporter)
-- Node Exporter: 10.0.0.99:9100 (on Proxmox host)
-- All LXCs: 10.0.0.x:9100 (node_exporter in each)
+- Nginx: 10.0.0.10:9113 (nginx-prometheus-exporter -> stub_status)
+- Gitea: 10.0.0.40:3000/metrics (bearer token)
+- Authelia: 10.0.0.30:9959/metrics (telemetry)
+- Grafana: 10.0.0.50:3000/metrics (added in Phase 7)
+- Node Exporter: 10.0.0.x:9100 (Proxmox host + every LXC)
 ```
+
+Prometheus is internal-only (not published through the tunnel); reach the UI via
+an SSH tunnel. LDAP-specific metrics are not yet exported.
 
 ## Resource Allocation
 
