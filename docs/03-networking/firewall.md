@@ -10,6 +10,7 @@ ufw default allow outgoing
 # LAN management (10.0.0.0/24)
 ufw allow from 10.0.0.0/24 to any port 22 proto tcp    # SSH
 ufw allow from 10.0.0.0/24 to any port 8006 proto tcp  # Proxmox GUI
+ufw allow from 10.0.0.0/24 to any port 9100 proto tcp  # node_exporter (Prometheus)
 
 # Cloudflare Tunnel (outbound only)
 ufw allow out 443 proto tcp  # cloudflared to Cloudflare
@@ -30,8 +31,9 @@ Status: active
      --                         ------      ----
 [ 1] 22/tcp                     ALLOW IN    10.0.0.0/24
 [ 2] 8006/tcp                   ALLOW IN    10.0.0.0/24
-[ 3] 443/tcp                    ALLOW OUT   Anywhere
-[ 4] 53/udp                     ALLOW OUT   Anywhere
+[ 3] 9100/tcp                    ALLOW IN    10.0.0.0/24
+[ 4] 443/tcp                    ALLOW OUT   Anywhere
+[ 5] 53/udp                     ALLOW OUT   Anywhere
 ```
 
 ## Internal LXC Firewall Matrix
@@ -44,7 +46,10 @@ Status: active
 | Authelia (103) | LDAP (102) | 636 | TCP | LDAPS bind |
 | Gitea (104) | Authelia (103) | 443 | TCP | OIDC discovery |
 | Grafana (105) | Authelia (103) | 443 | TCP | OIDC discovery |
-| Prometheus (106) | All LXCs | 9090,9100,etc | TCP | Metrics scrape |
+| Prometheus (106) | All LXCs + host (99) | 9100 | TCP | node_exporter scrape |
+| Prometheus (106) | Nginx (101) | 9113 | TCP | nginx-prometheus-exporter |
+| Prometheus (106) | Gitea (104) | 3000 | TCP | Gitea `/metrics` (bearer token) |
+| Prometheus (106) | Authelia (103) | 9959 | TCP | Authelia telemetry metrics |
 | Security (107) | All | Various | TCP/UDP | Testing/audit |
 
 ## LXC-Level Firewall (iptables/nftables)
@@ -59,7 +64,8 @@ apt install -y iptables-persistent
 iptables -A INPUT -i lo -j ACCEPT
 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 iptables -A INPUT -s 10.0.0.10 -p tcp --dport 3000 -j ACCEPT  # Nginx
-iptables -A INPUT -s 10.0.0.60 -p tcp --dport 3000 -j ACCEPT  # Prometheus
+iptables -A INPUT -s 10.0.0.60 -p tcp --dport 3000 -j ACCEPT  # Prometheus (Gitea metrics)
+iptables -A INPUT -s 10.0.0.60 -p tcp --dport 9100 -j ACCEPT  # Prometheus (node_exporter)
 iptables -A INPUT -p tcp --dport 22 -j ACCEPT  # SSH from LAN (optional)
 iptables -A INPUT -j DROP
 
