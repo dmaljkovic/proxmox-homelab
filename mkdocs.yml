@@ -56,7 +56,6 @@ nav:
       - OpenLDAP: 04-identity/openldap.md
       - Authelia: 04-identity/authelia.md
       - OIDC: 04-identity/oidc.md
-      - SSO Flow: 04-identity/sso-flow.md
   - Services:
       - Nginx: 05-services/nginx.md
       - Gitea: 05-services/gitea.md
