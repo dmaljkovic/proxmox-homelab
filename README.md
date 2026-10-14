@@ -115,7 +115,3 @@ See [Proxmox Installation](docs/02-proxmox/installation.md) for initial setup.
 | 9 | Ansible automation |
 | 10 | Backup & disaster recovery |
 | 11 | Documentation polish |
-
-## License
-
-MIT License — see [LICENSE](LICENSE)

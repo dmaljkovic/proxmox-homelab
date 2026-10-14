@@ -75,4 +75,3 @@ nav:
   - Backups:
       - Strategy: 09-backups/strategy.md
       - Disaster Recovery: 09-backups/disaster-recovery.md
-  - License: license.md
