@@ -12,6 +12,7 @@ Grafana is an open-source analytics and monitoring platform. It provides dashboa
 - **CPU**: 1 core
 - **Disk**: 8 GB
 - **OS**: Debian 12 (Bookworm)
+- **Version**: Grafana 13.2.3
 - **Database**: SQLite (embedded)
 
 ## Installation
@@ -30,80 +31,62 @@ echo "deb [signed-by=/usr/share/keyrings/grafana.gpg] https://apt.grafana.com st
 apt update && apt install -y grafana
 ```
 
-## Configuration (`/etc/grafana/grafana.ini`)
+## Configuration
 
-```ini
-[server]
-domain = grafana.example.com
-root_url = https://grafana.example.com/
-serve_from_sub_path = false
+The Debian package ships a systemd unit that starts `grafana server` with
+`--config /etc/grafana/grafana.ini` and loads environment variables from
+`/etc/default/grafana-server`. Rather than editing `grafana.ini`, homelab
+settings are applied as `GF_*` overrides appended to that environment file. This
+keeps the packaged defaults intact and makes the custom configuration easy to
+review.
 
-[database]
-type = sqlite3
-path = /var/lib/grafana/grafana.db
+`/etc/default/grafana-server`:
 
-[security]
-admin_user = admin
-admin_password = CHANGE_ME
-secret_key = GENERATE_WITH_openssl_rand_base64_32
-login_remember_days = 7
-cookie_username = grafana_session
-cookie_remember_name = grafana_remember
-disable_gravatar = true
+```bash
+# homelab overrides
+GF_SERVER_DOMAIN=grafana.example.com
+GF_SERVER_ROOT_URL=https://grafana.example.com/
+GF_SERVER_SERVE_FROM_SUB_PATH=false
 
-[auth]
-disable_login_form = false
-disable_signout_menu = false
+GF_SECURITY_ADMIN_USER=admin
+GF_SECURITY_ADMIN_PASSWORD=CHANGE_ME
 
-[auth.generic_oauth]
-enabled = true
-name = Authelia
-allow_sign_up = true
-client_id = grafana
-client_secret = grafana-secret
-scopes = openid profile email
-auth_url = https://auth.example.com/api/oidc/authorization
-token_url = https://auth.example.com/api/oidc/token
-api_url = https://auth.example.com/api/oidc/userinfo
-allowed_domains = example.com
-team_ids = 1
-role_attribute_path = groups
-allow_assign_grafana_admin = true
-
-[session]
-provider = file
-
-[log]
-mode = file
-level = info
-
-[paths]
-data = /var/lib/grafana
-logs = /var/log/grafana
-plugins = /var/lib/grafana/plugins
-provisioning = /etc/grafana/provisioning
+GF_AUTH_GENERIC_OAUTH_ENABLED=true
+GF_AUTH_GENERIC_OAUTH_NAME=Authelia
+GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP=true
+GF_AUTH_GENERIC_OAUTH_CLIENT_ID=grafana
+GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=CHANGE_ME
+GF_AUTH_GENERIC_OAUTH_SCOPES=openid profile email groups offline_access
+GF_AUTH_GENERIC_OAUTH_AUTH_URL=https://auth.example.com/api/oidc/authorization
+GF_AUTH_GENERIC_OAUTH_TOKEN_URL=https://auth.example.com/api/oidc/token
+GF_AUTH_GENERIC_OAUTH_API_URL=https://auth.example.com/api/oidc/userinfo
+GF_AUTH_GENERIC_OAUTH_USE_REFRESH_TOKEN=true
+GF_AUTH_GENERIC_OAUTH_LOGIN_ATTRIBUTE_PATH=preferred_username
+GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH=contains(groups[*], 'admins') && 'Admin' || contains(groups[*], 'developers') && 'Editor' || 'Viewer'
 ```
+
+After editing, restart the service:
+
+```bash
+systemctl restart grafana-server
+```
+
+> **Note:** `GF_SECURITY_ADMIN_PASSWORD` only takes effect on first
+> initialisation. If Grafana already created the `admin` user, reset it with
+> `grafana cli admin reset-admin-password "<new-password>"`.
 
 ## OIDC Configuration (Authelia)
 
-In `/etc/grafana/grafana.ini`:
+Grafana authenticates against Authelia via the generic OAuth provider. The
+`groups` scope is required so the `ROLE_ATTRIBUTE_PATH` expression can map LDAP
+group membership to Grafana roles:
 
-```ini
-[auth.generic_oauth]
-enabled = true
-name = Authelia
-allow_sign_up = true
-client_id = grafana
-client_secret = grafana-secret
-scopes = openid profile email
-auth_url = https://auth.example.com/api/oidc/authorization
-token_url = https://auth.example.com/api/oidc/token
-api_url = https://auth.example.com/api/oidc/userinfo
-allowed_domains = example.com
-team_ids = 1
-role_attribute_path = groups
-allow_assign_grafana_admin = true
-```
+- `admins` → `Admin`
+- `developers` → `Editor`
+- otherwise → `Viewer`
+
+`USE_REFRESH_TOKEN=true` is paired with the `offline_access` scope so Grafana
+can refresh tokens without re-prompting.
 
 ## Authelia OIDC Client Configuration
 
@@ -115,13 +98,15 @@ identity_providers:
     clients:
       - client_id: grafana
         client_name: Grafana
-        client_secret: "grafana-secret"
+        client_secret: "$pbkdf2-sha512$..."
         redirect_uris:
           - https://grafana.example.com/login/generic_oauth
         scopes:
           - openid
           - profile
           - email
+          - groups
+          - offline_access
         grant_types:
           - authorization_code
           - refresh_token
@@ -132,22 +117,26 @@ identity_providers:
         pkce_challenge_method: S256
 ```
 
-## Systemd Service
+Generate the hashed secret and store the plaintext in Grafana's
+`GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET`:
 
 ```bash
-systemctl daemon-reload
-systemctl enable --now grafana-server
-systemctl status grafana-server
+su -s /bin/bash -c '/usr/local/bin/authelia crypto hash generate pbkdf2 --password=<secret>' authelia
 ```
 
-## Provisioning (Optional)
+## Provisioning
 
-### Data Sources (`/etc/grafana/provisioning/datasources/prometheus.yaml`)
+Provisioning makes the Prometheus data source and dashboards available on a
+fresh Grafana instance without manual import.
+
+### Data Source (`/etc/grafana/provisioning/datasources/prometheus.yaml`)
 
 ```yaml
 apiVersion: 1
+
 datasources:
   - name: Prometheus
+    uid: prometheus
     type: prometheus
     access: proxy
     url: http://10.0.0.60:9090
@@ -155,16 +144,40 @@ datasources:
     editable: false
 ```
 
-### Dashboards (`/etc/grafana/provisioning/dashboards/dashboards.yaml`)
+The `uid` is fixed so provisioned dashboards can reference it reliably.
+
+### Dashboards (`/etc/grafana/provisioning/dashboards/homelab.yaml`)
 
 ```yaml
 apiVersion: 1
+
 providers:
-  - name: 'Default'
-    folder: 'Default'
+  - name: homelab
+    orgId: 1
+    folder: Homelab
+    folderUid: homelab
     type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
     options:
-      path: /etc/grafana/provisioning/dashboards
+      path: /var/lib/grafana/dashboards
+```
+
+Dashboard JSON files are placed in `/var/lib/grafana/dashboards/`. When
+importing community dashboards, replace any `${DS_...}` datasource placeholders
+with `prometheus` (the provisioned uid) and remove the `__inputs` block, since
+provisioning does not resolve dashboard `__inputs`.
+
+## Metrics
+
+Grafana exposes Prometheus metrics on its HTTP port at `/metrics`, scraped by
+the `grafana` job in the [Prometheus](prometheus.md) configuration:
+
+```yaml
+- job_name: grafana
+  static_configs:
+    - targets: ['10.0.0.50:3000']
 ```
 
 ## Firewall
@@ -184,20 +197,31 @@ curl -s http://10.0.0.50:3000/api/health
 # Via Nginx/Cloudflare
 curl -I https://grafana.example.com
 
-# Test OIDC login
-# Visit https://grafana.example.com -> should redirect to Authelia
+# OIDC redirect (expect 302 to Authelia)
+curl -sI https://grafana.example.com/login/generic_oauth
+
+# Data source health (admin credentials)
+curl -s -u admin:<password> \
+  http://10.0.0.50:3000/api/datasources/uid/prometheus/health
 ```
 
-## Dashboards to Import
+Then visit https://grafana.example.com, click **Sign in with Authelia**, and
+confirm dashboards render live data.
 
-| Dashboard ID | Name | Description |
-|--------------|------|-------------|
-| 1860 | Node Exporter Full | System metrics |
-| 11156 | Prometheus 2.0 Stats | Prometheus self-monitoring |
-| 15161 | Gitea Dashboard | Gitea metrics |
-| 13978 | Authelia Dashboard | Authelia metrics |
+## Dashboards
 
-Import via Grafana UI: **+** -> **Import** -> Enter Dashboard ID
+| Dashboard ID | Name | Provisioned file |
+|--------------|------|------------------|
+| 1860 | Node Exporter Full | `/var/lib/grafana/dashboards/node-exporter-full.json` |
+| 3662 | Prometheus 2.0 Overview | `/var/lib/grafana/dashboards/prometheus-overview.json` |
+
+Download from grafana.com and adapt the datasource placeholder:
+
+```bash
+curl -fsSL https://grafana.com/api/dashboards/1860/revisions/latest/download \
+  -o node-exporter-full.json
+# then replace "${ds_prometheus}" with "prometheus" and set "id": null
+```
 
 ## Backup
 
@@ -206,7 +230,7 @@ Import via Grafana UI: **+** -> **Import** -> Enter Dashboard ID
 cp /var/lib/grafana/grafana.db /backup/grafana-$(date +%F).db
 
 # Dashboards (JSON)
-grafana-cli admin export-dashboard --uid=UID > /backup/dashboard-UID.json
+grafana cli admin export-dashboard <uid> > /backup/dashboard-<uid>.json
 ```
 
 ## References
