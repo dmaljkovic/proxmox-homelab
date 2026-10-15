@@ -19,7 +19,6 @@ graph TB
             Gitea[Gitea LXC 104<br/>10.0.0.40:3000]
             Grafana[Grafana LXC 105<br/>10.0.0.50:3000]
             Prom[Prometheus LXC 106<br/>10.0.0.60:9090]
-            Sec[Security LXC 107<br/>10.0.0.70]
         end
     end
     
@@ -36,9 +35,6 @@ graph TB
     Prom -.->|scrape| Grafana
     Prom -.->|scrape| Authelia
     Prom -.->|scrape| LDAP
-    Sec -.->|audit| Nginx
-    Sec -.->|audit| LDAP
-    Sec -.->|audit| Gitea
     
     classDef cloud fill:#f3f4f6,stroke:#6b7280
     classDef host fill:#e0f2fe,stroke:#0369a1
@@ -48,6 +44,6 @@ graph TB
     
     class Edge,Tunnel cloud
     class Host,CF host
-    class Nginx,Gitea,Grafana,Sec lxc
+    class Nginx,Gitea,Grafana lxc
     class LDAP,Authelia identity
     class Prom monitoring

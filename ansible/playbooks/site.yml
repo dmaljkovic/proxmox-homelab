@@ -40,9 +40,3 @@
   become: yes
   roles:
     - prometheus
-
-- name: Configure Security LXC
-  hosts: security
-  become: yes
-  roles:
-    - security

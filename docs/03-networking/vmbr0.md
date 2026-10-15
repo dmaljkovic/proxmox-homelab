@@ -63,7 +63,6 @@ net0: name=eth0,bridge=vmbr0,ip=10.0.0.10/24,gw=10.0.0.1,hwaddr=aa:bb:cc:dd:ee:0
 | Gitea (104) | 10.0.0.40 | `:ee:04` |
 | Grafana (105) | 10.0.0.50 | `:ee:05` |
 | Prometheus (106) | 10.0.0.60 | `:ee:06` |
-| Security (107) | 10.0.0.70 | `:ee:07` |
 
 ## Verification
 
@@ -73,7 +72,7 @@ ip link show vmbr0
 bridge link show dev vmbr0
 
 # Check LXC interfaces
-for i in {101..107}; do pct exec $i -- ip -br a; done
+for i in {101..106}; do pct exec $i -- ip -br a; done
 
 # Test connectivity
 pct exec 101 -- ping -c 2 10.0.0.20

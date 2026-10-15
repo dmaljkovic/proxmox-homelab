@@ -35,7 +35,6 @@ graph TB
             Gitea[Gitea LXC 104<br/>10.0.0.40]
             Grafana[Grafana LXC 105<br/>10.0.0.50]
             Prom[Prometheus LXC 106<br/>10.0.0.60]
-            Sec[Security LXC 107<br/>10.0.0.70]
         end
     end
     
@@ -52,9 +51,6 @@ graph TB
     Prom -.->|scrape| Grafana
     Prom -.->|scrape| Authelia
     Prom -.->|scrape| LDAP
-    Sec -.->|audit| Nginx
-    Sec -.->|audit| LDAP
-    Sec -.->|audit| Gitea
 ```
 
 ## Component Responsibilities
@@ -68,7 +64,6 @@ graph TB
 | Gitea | Git server, OIDC SSO | 3000 (internal) |
 | Grafana | Dashboards, visualization | 3000 (internal) |
 | Prometheus | Metrics collection | 9090 (internal) |
-| Security | Audit/testing tools | Various |
 
 ## Data Flow
 
@@ -111,8 +106,7 @@ an SSH tunnel. LDAP-specific metrics are not yet exported.
 | 104 | Gitea | 768 MB | 2 | 8 GB |
 | 105 | Grafana | 512 MB | 1 | 8 GB |
 | 106 | Prometheus | 512 MB | 1 | 8 GB |
-| 107 | Security | 512 MB | 1 | 4 GB |
-| **Total** | | **~3.5 GB** | | **~40 GB** |
+| **Total** | | **~2.5 GB** | | **~36 GB** |
 
 Host reserves ~2 GB, leaving ~10 GB for cache/bursts.
 

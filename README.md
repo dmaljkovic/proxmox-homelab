@@ -77,7 +77,6 @@ proxmox-homelab/
 │   ├── 03-networking/    # Network, tunnel, firewall
 │   ├── 04-identity/      # LDAP, Authelia, OIDC
 │   ├── 05-services/      # Nginx, Gitea, Grafana, Prometheus
-│   ├── 06-security/      # Hardening, firewall, checklists
 │   ├── 07-monitoring/    # Prometheus, dashboards
 │   ├── 08-automation/    # Ansible
 │   └── 09-backups/       # Backup strategy
@@ -111,7 +110,6 @@ See [Proxmox Installation](docs/02-proxmox/installation.md) for initial setup.
 | 5 | Gitea (OIDC SSO); GitHub mirror optional |
 | 6 | Prometheus monitoring |
 | 7 | Grafana dashboards |
-| 8 | Security LXC + auditing |
 | 9 | Ansible automation |
 | 10 | Backup & disaster recovery |
 | 11 | Documentation polish |

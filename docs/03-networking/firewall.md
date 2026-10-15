@@ -50,7 +50,6 @@ Status: active
 | Prometheus (106) | Nginx (101) | 9113 | TCP | nginx-prometheus-exporter |
 | Prometheus (106) | Gitea (104) | 3000 | TCP | Gitea `/metrics` (bearer token) |
 | Prometheus (106) | Authelia (103) | 9959 | TCP | Authelia telemetry metrics |
-| Security (107) | All | Various | TCP/UDP | Testing/audit |
 
 ## LXC-Level Firewall (iptables/nftables)
 
