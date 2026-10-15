@@ -16,10 +16,10 @@
 ```
 Total RAM: 16 GB
 ├── Proxmox Host: ~2 GB
-├── LXC Containers: ~3.5 GB (allocated)
+├── LXC Containers: ~2.5 GB (allocated)
 ├── ZFS ARC: N/A (ext4)
 ├── Page Cache: ~4 GB
-└── Free/Buffers: ~6.5 GB
+└── Free/Buffers: ~7.5 GB
 ```
 
 ## Storage Layout
@@ -34,7 +34,6 @@ Total RAM: 16 GB
 │   ├── CT-104 (gitea): 8 GB
 │   ├── CT-105 (grafana): 8 GB
 │   ├── CT-106 (prometheus): 8 GB
-│   ├── CT-107 (security): 4 GB
 │   ├── backups: ~40 GB
 │   └── templates/ISOs: ~10 GB
 ```

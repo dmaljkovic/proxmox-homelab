@@ -66,7 +66,6 @@ scrape_configs:
           - 10.0.0.40:9100   # gitea
           - 10.0.0.50:9100   # grafana
           - 10.0.0.60:9100   # prometheus
-          - 10.0.0.70:9100   # security
         labels:
           env: homelab
 
@@ -138,7 +137,7 @@ install -m 0755 node_exporter-${VER}.linux-amd64/node_exporter /usr/local/bin/no
 id node_exporter >/dev/null 2>&1 || useradd --system --no-create-home --shell /usr/sbin/nologin node_exporter
 
 # Push into each container (the unit file lives at /etc/systemd/system/node_exporter.service)
-for id in 101 102 103 104 105 106 107; do
+for id in 101 102 103 104 105 106; do
   pct push $id node_exporter-${VER}.linux-amd64/node_exporter /usr/local/bin/node_exporter --perms 0755
   pct push $id /etc/systemd/system/node_exporter.service /etc/systemd/system/node_exporter.service --perms 0644
   pct exec $id -- bash -c 'id node_exporter >/dev/null 2>&1 || useradd --system --no-create-home --shell /usr/sbin/nologin node_exporter; systemctl daemon-reload; systemctl enable --now node_exporter'
@@ -304,8 +303,8 @@ curl -s http://10.0.0.60:9090/api/v1/status/flags | \
   jq -r '.data | "retention=\(."storage.tsdb.retention.time")"'
 ```
 
-Expected jobs: `prometheus`, `node` (8 targets), `nginx`, `gitea`, `authelia`,
-`grafana` — 13 scrape targets total.
+Expected jobs: `prometheus`, `node` (7 targets), `nginx`, `gitea`, `authelia`,
+`grafana` — 12 scrape targets total.
 
 ## Backup
 

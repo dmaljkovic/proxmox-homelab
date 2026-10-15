@@ -30,7 +30,6 @@ graph TB
             Gitea[Gitea<br/>10.0.0.40]
             Grafana[Grafana<br/>10.0.0.50]
             Prom[Prometheus<br/>10.0.0.60]
-            Sec[Security<br/>10.0.0.70]
         end
     end
     
@@ -46,7 +45,6 @@ graph TB
     vmbr0 --> Gitea
     vmbr0 --> Grafana
     vmbr0 --> Prom
-    vmbr0 --> Sec
     vmbr0 --> Host
 ```
 
@@ -63,7 +61,6 @@ graph TB
 | Gitea (LXC 104) | 10.0.0.40 | `aa:bb:cc:dd:ee:04` | Static |
 | Grafana (LXC 105) | 10.0.0.50 | `aa:bb:cc:dd:ee:05` | Static |
 | Prometheus (LXC 106) | 10.0.0.60 | `aa:bb:cc:dd:ee:06` | Static |
-| Security (LXC 107) | 10.0.0.70 | `aa:bb:cc:dd:ee:07` | Static |
 
 ## Proxmox Network Config (`/etc/network/interfaces`)
 
