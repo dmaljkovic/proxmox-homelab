@@ -94,7 +94,7 @@ Prometheus (10.0.0.60:9090) scrapes:
 - Nginx: 10.0.0.10:9113 (nginx-prometheus-exporter -> stub_status)
 - Gitea: 10.0.0.40:3000/metrics (bearer token)
 - Authelia: 10.0.0.30:9959/metrics (telemetry)
-- Grafana: 10.0.0.50:3000/metrics (added in Phase 7)
+- Grafana: 10.0.0.50:3000/metrics
 - Node Exporter: 10.0.0.x:9100 (Proxmox host + every LXC)
 ```
 

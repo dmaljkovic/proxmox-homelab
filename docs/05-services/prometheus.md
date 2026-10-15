@@ -84,6 +84,10 @@ scrape_configs:
   - job_name: authelia
     static_configs:
       - targets: ['10.0.0.30:9959']
+
+  - job_name: grafana
+    static_configs:
+      - targets: ['10.0.0.50:3000']
 ```
 
 ## Systemd Service (`/etc/systemd/system/prometheus.service`)
@@ -300,7 +304,8 @@ curl -s http://10.0.0.60:9090/api/v1/status/flags | \
   jq -r '.data | "retention=\(."storage.tsdb.retention.time")"'
 ```
 
-Expected jobs: `prometheus`, `node` (9 targets), `nginx`, `gitea`, `authelia`.
+Expected jobs: `prometheus`, `node` (8 targets), `nginx`, `gitea`, `authelia`,
+`grafana` — 13 scrape targets total.
 
 ## Backup
 
