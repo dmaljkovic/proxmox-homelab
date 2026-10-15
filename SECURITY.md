@@ -47,21 +47,6 @@ Security issues: Create a GitHub Security Advisory.
 | Monitoring | Prometheus + Grafana alerts |
 | Backups | Encrypted, off-site |
 
-## Threat Model
-
-### In Scope
-- Unauthorized access to services
-- Data exfiltration from Gitea/Grafana
-- Credential theft via phishing
-- Container escape
-- Supply chain attacks
-
-### Out of Scope
-- Physical access to laptop
-- Cloudflare infrastructure compromise
-- ISP-level traffic interception (encrypted tunnel)
-- Zero-day exploits in upstream software
-
 ## Hardening Checklist
 
 - [ ] Proxmox: SSH key-only, UFW, fail2ban, auto-updates
@@ -74,7 +59,3 @@ Security issues: Create a GitHub Security Advisory.
 - [ ] LXCs: Individual firewalls, minimal packages
 - [ ] Secrets: All encrypted with SOPS/age
 - [ ] Backups: Tested restore, encrypted
-
-## Compliance Notes
-
-This is a personal homelab project demonstrating security practices. Not certified for any compliance framework (SOC2, ISO27001, etc.).
