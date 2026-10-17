@@ -127,9 +127,11 @@ secrets file with `ansible-vault` instead.
 | `prometheus` | `prometheus` | binaries, `prometheus.yml` (validated with `promtool`), systemd unit |
 | `grafana` | `grafana` | apt repo, server env overrides (OIDC), datasource + dashboard provisioning |
 
-> **Roadmap:** the `openldap`, `authelia`, `gitea`, and `proxmox-host` roles are
-> the next increment. The `grafana` role already renders its OIDC client secret
-> and the Prometheus scrape config from inventory variables.
+> **Scope:** the playbook automates the core stack — `base`, `node_exporter`,
+> `nginx`, `prometheus`, and `grafana`. The `openldap`, `authelia`, `gitea`, and
+> `proxmox-host` roles are intentionally deferred (they hold the identity-stack
+> secrets and are higher-risk to re-apply). The `grafana` role already renders its
+> OIDC client secret and the Prometheus scrape config from inventory variables.
 
 ## Running
 
@@ -147,9 +149,8 @@ ansible-playbook playbooks/site.yml --check --diff
 # Apply everything
 ansible-playbook playbooks/site.yml
 
-# Apply a single host or role
+# Apply a single host
 ansible-playbook playbooks/site.yml --limit grafana
-ansible-playbook playbooks/site.yml --tags node
 ```
 
 ## Secrets & the Grafana dashboards
