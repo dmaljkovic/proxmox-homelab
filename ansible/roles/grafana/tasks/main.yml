@@ -1,0 +1,115 @@
+---
+# check_mode: false — prerequisites for the apt_repository task below, which
+# cannot be simulated in check mode.
+- name: Download Grafana GPG key
+  ansible.builtin.get_url:
+    url: https://apt.grafana.com/gpg.key
+    dest: /tmp/grafana.gpg.key
+    owner: root
+    group: root
+    mode: "0644"
+  check_mode: false
+
+- name: Install Grafana GPG key
+  ansible.builtin.shell:
+    cmd: gpg --dearmor < /tmp/grafana.gpg.key > /usr/share/keyrings/grafana.gpg
+    creates: /usr/share/keyrings/grafana.gpg
+  check_mode: false
+
+- name: Add Grafana apt repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/grafana.gpg] https://apt.grafana.com {{ grafana_repo_channel }} main"
+    filename: grafana
+    state: present
+    update_cache: true
+
+- name: Install Grafana
+  ansible.builtin.apt:
+    name: grafana
+    state: present
+
+- name: Deploy Grafana environment overrides
+  ansible.builtin.template:
+    src: grafana-server.default.j2
+    dest: /etc/default/grafana-server
+    owner: root
+    group: root
+    mode: "0640"
+  notify: Restart grafana
+
+# dashboards-src is scratch only — kept OUTSIDE the provisioned path so the
+# dashboard provider never scans the raw, unpatched copies.
+- name: Create dashboards directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: grafana
+    group: grafana
+    mode: "0755"
+  loop:
+    - /var/lib/grafana/dashboards
+    - /var/lib/grafana/dashboards-src
+
+- name: Deploy Prometheus datasource provisioning
+  ansible.builtin.template:
+    src: datasource-prometheus.yaml.j2
+    dest: /etc/grafana/provisioning/datasources/prometheus.yaml
+    owner: grafana
+    group: grafana
+    mode: "0644"
+  notify: Restart grafana
+
+- name: Deploy dashboards provider provisioning
+  ansible.builtin.template:
+    src: dashboards-provider.yaml.j2
+    dest: /etc/grafana/provisioning/dashboards/homelab.yaml
+    owner: grafana
+    group: grafana
+    mode: "0644"
+  notify: Restart grafana
+
+# check_mode: false — the JSON files are prerequisites for the install task below.
+- name: Download community dashboards
+  ansible.builtin.get_url:
+    url: "https://grafana.com/api/dashboards/{{ item.id }}/revisions/latest/download"
+    dest: "/var/lib/grafana/dashboards-src/{{ item.file }}"
+    owner: grafana
+    group: grafana
+    mode: "0644"
+  check_mode: false
+  loop:
+    - { id: 1860, file: node-exporter-full.json, placeholder: "\\$\\{ds_prometheus\\}" }
+    - { id: 3662, file: prometheus-overview.json, placeholder: "\\$\\{DS_THEMIS\\}" }
+
+# force: false — only seed the provisioned dashboard on first install so later
+# refreshes of the scratch copy never clobber the patched file.
+- name: Install community dashboards
+  ansible.builtin.copy:
+    src: "/var/lib/grafana/dashboards-src/{{ item.file }}"
+    dest: "/var/lib/grafana/dashboards/{{ item.file }}"
+    remote_src: true
+    owner: grafana
+    group: grafana
+    mode: "0644"
+    force: false
+  loop:
+    - { id: 1860, file: node-exporter-full.json, placeholder: "\\$\\{ds_prometheus\\}" }
+    - { id: 3662, file: prometheus-overview.json, placeholder: "\\$\\{DS_THEMIS\\}" }
+  notify: Restart grafana
+
+- name: Fix dashboard datasource placeholders
+  ansible.builtin.replace:
+    path: "/var/lib/grafana/dashboards/{{ item.file }}"
+    regexp: "{{ item.placeholder }}"
+    replace: "prometheus"
+  loop:
+    - { file: node-exporter-full.json, placeholder: "\\$\\{ds_prometheus\\}" }
+    - { file: prometheus-overview.json, placeholder: "\\$\\{DS_THEMIS\\}" }
+  notify: Restart grafana
+
+- name: Enable and start Grafana
+  ansible.builtin.systemd:
+    name: grafana-server
+    enabled: true
+    state: started
+    daemon_reload: true

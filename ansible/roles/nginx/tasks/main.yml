@@ -1,0 +1,52 @@
+---
+- name: Install nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+
+- name: Deploy nginx.conf
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Validate and reload nginx
+
+- name: Deploy site configs
+  ansible.builtin.template:
+    src: "{{ item.template }}.j2"
+    dest: "/etc/nginx/sites-available/{{ item.name }}"
+    owner: root
+    group: root
+    mode: "0644"
+  loop:
+    - { name: "auth.{{ domain }}", template: auth.site }
+    - { name: "git.{{ domain }}", template: git.site }
+    - { name: "grafana.{{ domain }}", template: grafana.site }
+    - { name: "stub_status", template: stub_status }
+  notify: Validate and reload nginx
+
+- name: Enable site configs
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/{{ item }}"
+    dest: "/etc/nginx/sites-enabled/{{ item }}"
+    state: link
+  loop:
+    - "auth.{{ domain }}"
+    - "git.{{ domain }}"
+    - "grafana.{{ domain }}"
+    - stub_status
+  notify: Validate and reload nginx
+
+- name: Remove default site symlink
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Validate and reload nginx
+
+- name: Enable and start nginx
+  ansible.builtin.systemd:
+    name: nginx
+    enabled: true
+    state: started

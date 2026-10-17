@@ -1,0 +1,29 @@
+---
+# Public defaults (safe to commit). Real secrets are overridden by
+# secrets.local.yml (gitignored).
+
+system_timezone: Etc/UTC
+
+node_exporter_version: "1.12.1"
+
+# Ordered list of hosts running node_exporter, rendered into prometheus.yml.
+node_exporters:
+  - { host: proxmox-host, comment: "Proxmox host" }
+  - { host: nginx, comment: "nginx" }
+  - { host: openldap, comment: "openldap" }
+  - { host: authelia, comment: "authelia" }
+  - { host: gitea, comment: "gitea" }
+  - { host: grafana, comment: "grafana" }
+  - { host: prometheus, comment: "prometheus" }
+
+prometheus_version: "3.15.0"
+prometheus_retention: "15d"
+
+grafana_repo_channel: stable
+
+# --- secrets: override these in secrets.local.yml / ansible-vault ---
+grafana_admin_user: admin
+grafana_admin_password: CHANGE_ME
+grafana_secret_key: CHANGE_ME
+grafana_oidc_client_secret: CHANGE_ME
+gitea_metrics_token: CHANGE_ME

@@ -1,0 +1,20 @@
+[Unit]
+Description=Prometheus
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=prometheus
+Group=prometheus
+Type=simple
+ExecStart=/usr/local/bin/prometheus \
+  --config.file=/etc/prometheus/prometheus.yml \
+  --storage.tsdb.path=/var/lib/prometheus \
+  --storage.tsdb.retention.time={{ prometheus_retention }} \
+  --web.listen-address=0.0.0.0:9090 \
+  --web.enable-lifecycle
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

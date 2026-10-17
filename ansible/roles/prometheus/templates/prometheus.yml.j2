@@ -1,0 +1,38 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: homelab
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: node
+    static_configs:
+      - targets:
+{% for node in node_exporters %}
+          - {{ hostvars[node.host].ansible_host }}:9100   # {{ node.comment }}
+{% endfor %}
+        labels:
+          env: homelab
+
+  - job_name: nginx
+    static_configs:
+      - targets: ['{{ hostvars['nginx'].ansible_host }}:9113']
+
+  - job_name: gitea
+    metrics_path: /metrics
+    authorization:
+      credentials: {{ gitea_metrics_token }}
+    static_configs:
+      - targets: ['{{ hostvars['gitea'].ansible_host }}:3000']
+
+  - job_name: authelia
+    static_configs:
+      - targets: ['{{ hostvars['authelia'].ansible_host }}:9959']
+
+  - job_name: grafana
+    static_configs:
+      - targets: ['{{ hostvars['grafana'].ansible_host }}:3000']
