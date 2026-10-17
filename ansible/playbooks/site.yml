@@ -1,42 +1,27 @@
 ---
-- name: Configure Proxmox Host
-  hosts: proxmox
-  become: yes
+- name: Base system + node_exporter (all hosts)
+  hosts: all
+  become: true
   roles:
-    - proxmox-host
+    - base
+    - node_exporter
 
-- name: Configure Nginx Reverse Proxy
+- name: Configure Nginx reverse proxy
   hosts: nginx
-  become: yes
+  become: true
   roles:
     - nginx
 
-- name: Configure OpenLDAP
-  hosts: openldap
-  become: yes
+- name: Configure Prometheus
+  hosts: prometheus
+  become: true
   roles:
-    - openldap
-
-- name: Configure Authelia SSO
-  hosts: authelia
-  become: yes
-  roles:
-    - authelia
-
-- name: Configure Gitea
-  hosts: gitea
-  become: yes
-  roles:
-    - gitea
+    - prometheus
 
 - name: Configure Grafana
   hosts: grafana
-  become: yes
+  become: true
   roles:
     - grafana
 
-- name: Configure Prometheus
-  hosts: prometheus
-  become: yes
-  roles:
-    - prometheus
+# TODO (next increment): openldap, authelia, gitea, proxmox-host roles.
