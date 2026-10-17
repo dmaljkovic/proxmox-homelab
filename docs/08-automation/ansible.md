@@ -1,20 +1,5 @@
 # Ansible Automation
 
-## Overview
-
-Every service in the homelab was originally deployed by hand. Phase 9 converts
-that into **idempotent Ansible roles** so the whole stack can be re-created — or
-verified — from a single playbook run.
-
-Automation runs from a **control node** (your workstation) over SSH, targeting
-the Proxmox host and each LXC directly. The design goals are:
-
-- **Idempotent** — running the playbook twice reports no changes the second time.
-- **Secret-safe** — real secrets live in gitignored files; the committed
-  inventory uses placeholders.
-- **Sanitized** — the published inventory and docs use `example.com` and
-  `10.0.0.x`, never the real internal values.
-
 ## Layout
 
 ```
