@@ -19,7 +19,8 @@ ansible/
     ├── node_exporter/                 # node_exporter on every host
     ├── nginx/                         # reverse proxy + vhosts
     ├── prometheus/                    # server + scrape config
-    └── grafana/                       # server + datasource + dashboards
+    ├── grafana/                       # server + datasource + dashboards
+    └── backup/                        # service-level backup script + cron
 ```
 
 ## Prerequisites
@@ -111,12 +112,14 @@ secrets file with `ansible-vault` instead.
 | `nginx` | `nginx` | `nginx.conf`, vhosts (auth, git, grafana), local `stub_status` |
 | `prometheus` | `prometheus` | binaries, `prometheus.yml` (validated with `promtool`), systemd unit |
 | `grafana` | `grafana` | apt repo, server env overrides (OIDC), datasource + dashboard provisioning |
+| `backup` | `proxmox` | service-level backup script (LDAP/Gitea/Prometheus) + nightly cron |
 
 > **Scope:** the playbook automates the core stack — `base`, `node_exporter`,
-> `nginx`, `prometheus`, and `grafana`. The `openldap`, `authelia`, `gitea`, and
-> `proxmox-host` roles are intentionally deferred (they hold the identity-stack
-> secrets and are higher-risk to re-apply). The `grafana` role already renders its
-> OIDC client secret and the Prometheus scrape config from inventory variables.
+> `nginx`, `prometheus`, `grafana`, and `backup`. The `openldap`, `authelia`,
+> `gitea`, and `proxmox-host` roles are intentionally deferred (they hold the
+> identity-stack secrets and are higher-risk to re-apply). The `grafana` role
+> already renders its OIDC client secret and the Prometheus scrape config from
+> inventory variables.
 
 ## Running
 

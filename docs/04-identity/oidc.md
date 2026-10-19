@@ -258,6 +258,6 @@ Configure logout URL in client application.
 - Use PKCE for all clients
 - Rotate client secrets periodically
 - Use short access token lifetimes (1h)
-- Store client secrets securely (SOPS/age)
+- Store client secrets securely (gitignored files / Ansible Vault)
 - Validate redirect URIs exactly
 - Monitor token endpoint for abuse

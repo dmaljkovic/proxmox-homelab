@@ -4,7 +4,7 @@
 
 | Component | Specification |
 |-----------|---------------|
-| **CPU** | Intel Core Intel i7 (4C/8T) (4C/8T, 2.8-3.8 GHz) |
+| **CPU** | Intel Core i7 (4C/8T, 2.8-3.8 GHz) |
 | **RAM** | 16 GB DDR4-2400 (2x8 GB, max 32 GB) |
 | **Storage** | 128 GB M.2 PCIe SSD (system) + 2.5" SATA bay (empty) |
 | **Network** | Gigabit Ethernet (Realtek RTL8111) + Wi-Fi (unused) |

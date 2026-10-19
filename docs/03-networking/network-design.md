@@ -124,4 +124,4 @@ ufw allow out 443 proto tcp  # cloudflared to Cloudflare
 - **Static IPs**: Predictable, no DHCP dependency for services
 - **Cloudflare Tunnel**: Works behind CG-NAT, no port forwarding
 - **Local DNS**: Pi-hole for internal resolution, ad blocking
-- **No VLANs (yet)**: KISS principle; VLANs are Phase 2
+- **No VLANs (yet)**: KISS principle; VLAN segmentation is a future enhancement
