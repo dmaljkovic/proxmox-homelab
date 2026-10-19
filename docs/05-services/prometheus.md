@@ -106,7 +106,8 @@ ExecStart=/usr/local/bin/prometheus \
   --storage.tsdb.path=/var/lib/prometheus \
   --storage.tsdb.retention.time=15d \
   --web.listen-address=0.0.0.0:9090 \
-  --web.enable-lifecycle
+  --web.enable-lifecycle \
+  --web.enable-admin-api
 Restart=on-failure
 RestartSec=5s
 
@@ -118,6 +119,13 @@ WantedBy=multi-user.target
 
 ```bash
 curl -X POST http://10.0.0.60:9090/-/reload
+```
+
+`--web.enable-admin-api` enables the TSDB snapshot endpoint used by the
+[backup script](../09-backups/strategy.md) to take consistent, online snapshots:
+
+```bash
+curl -X POST http://10.0.0.60:9090/api/v1/admin/tsdb/snapshot
 ```
 
 ## Exporters

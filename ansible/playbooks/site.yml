@@ -24,4 +24,11 @@
   roles:
     - grafana
 
-# TODO (next increment): openldap, authelia, gitea, proxmox-host roles.
+- name: Service-level backups (Proxmox host)
+  hosts: proxmox
+  become: true
+  roles:
+    - backup
+  tags: [backup]
+
+# TODO (deferred): openldap, authelia, gitea, proxmox-host roles.

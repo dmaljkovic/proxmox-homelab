@@ -21,6 +21,12 @@ prometheus_retention: "15d"
 
 grafana_repo_channel: stable
 
+# --- backups ---
+backup_root: /var/lib/vz/backups
+backup_retention_days: 14
+backup_hour: "22"
+backup_minute: "0"
+
 # --- secrets: override these in secrets.local.yml / ansible-vault ---
 grafana_admin_user: admin
 grafana_admin_password: CHANGE_ME

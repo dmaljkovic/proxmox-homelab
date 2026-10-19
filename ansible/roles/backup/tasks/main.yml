@@ -1,0 +1,30 @@
+---
+- name: Create backup directories
+  ansible.builtin.file:
+    path: "{{ backup_root }}/{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0750"
+  loop:
+    - ldap
+    - gitea
+    - prometheus
+    - logs
+
+- name: Deploy homelab backup script
+  ansible.builtin.template:
+    src: homelab-backup.sh.j2
+    dest: /usr/local/sbin/homelab-backup.sh
+    owner: root
+    group: root
+    mode: "0750"
+
+- name: Schedule nightly service-level backups
+  ansible.builtin.cron:
+    name: "homelab service backups"
+    user: root
+    hour: "{{ backup_hour }}"
+    minute: "{{ backup_minute }}"
+    job: "/usr/local/sbin/homelab-backup.sh >> {{ backup_root }}/logs/backup.log 2>&1"
+    cron_file: homelab-backup
