@@ -180,36 +180,6 @@ systemctl enable --now gitea
 systemctl status gitea
 ```
 
-## GitHub Mirror (Push Mirror) — Optional
-
-> **Not enabled in this build.** Publishing the documentation to GitHub Pages is
-> done by pushing directly from the workstation; a Gitea push mirror is an
-> optional addition.
-
-1. **Create a GitHub Personal Access Token:**
-   - Settings -> Developer settings -> Personal access tokens -> Fine-grained
-   - Repository access: the target repo only; Permissions: `Contents: Read and write`
-   - Copy token
-
-2. **Configure Push Mirror in Gitea:**
-   - Admin Panel -> Repositories -> Mirrors -> Add Push Mirror
-   - Remote URL: `https://github.com/username/repo.git`
-   - Authentication: `username:PAT`
-   - Sync on push: Enabled
-
-3. **Test:**
-   ```bash
-   # Push to Gitea
-   git push origin main
-   # Verify on GitHub
-   ```
-
-## SSH Access (Not used)
-
-This build serves Git over **HTTPS only** (`DISABLE_SSH = true`), so no SSH keys
-are needed for clients. (If the optional push mirror were enabled, an outbound
-deploy key for GitHub would be generated here.)
-
 ## Firewall
 
 ```bash
