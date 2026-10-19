@@ -156,13 +156,6 @@ dig git.example.com +short
 ### DNS
 - Records created above should show "Proxied" (orange cloud)
 
-### Access (Optional - for additional auth)
-- Can add Access policies for extra protection
-- Not needed if Authelia handles auth
-
-### Workers & Pages (Optional)
-- Can add Workers for custom logic
-
 ## Troubleshooting
 
 ### Tunnel Not Connecting
