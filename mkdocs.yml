@@ -61,9 +61,6 @@ nav:
       - Gitea: 05-services/gitea.md
       - Grafana: 05-services/grafana.md
       - Prometheus: 05-services/prometheus.md
-  - Monitoring:
-      - Prometheus: 07-monitoring/prometheus.md
-      - Grafana Dashboards: 07-monitoring/grafana-dashboards.md
   - Automation:
       - Ansible: 08-automation/ansible.md
   - Backups:

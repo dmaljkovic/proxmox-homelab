@@ -14,6 +14,8 @@ A lightweight, security-focused homelab running on a Generic Laptop with 16 GB R
 - [Gitea](05-services/gitea.md)
 - [Grafana](05-services/grafana.md)
 - [Prometheus](05-services/prometheus.md)
+- [Ansible Automation](08-automation/ansible.md)
+- [Backup Strategy](09-backups/strategy.md)
 
 ## Tech Stack
 
@@ -28,7 +30,7 @@ A lightweight, security-focused homelab running on a Generic Laptop with 16 GB R
 | Monitoring | Prometheus + Grafana |
 | Tunnel | Cloudflare Tunnel |
 | Automation | Ansible |
-| Secrets | SOPS + age |
+| Secrets | Gitignored local files |
 | Documentation | MkDocs + GitHub Pages |
 
 ## Network Topology
@@ -71,4 +73,4 @@ See [Proxmox Installation](02-proxmox/installation.md) for initial setup.
 - SSH key-only authentication
 - All web traffic via Nginx + Authelia SSO
 - Internal services isolated on vmbr0
-- Secrets encrypted with SOPS/age
+- Secrets kept out of Git (gitignored local files)

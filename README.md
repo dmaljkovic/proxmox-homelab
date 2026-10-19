@@ -38,7 +38,7 @@ graph TB
 | **Monitoring** | Prometheus + Grafana |
 | **Tunnel** | Cloudflare Tunnel |
 | **Automation** | Ansible |
-| **Secrets** | SOPS + age |
+| **Secrets** | Gitignored local files |
 | **Documentation** | MkDocs + GitHub Pages |
 
 ## Services
@@ -65,7 +65,7 @@ graph TB
 - **Centralized SSO** — Authelia OIDC + TOTP MFA
 - **LDAPS only** — Encrypted LDAP communication
 - **Defense in depth** — Cloudflare WAF → Nginx → Authelia → LDAP
-- **Secrets encrypted** — SOPS + age in Git
+- **Secrets out of Git** — real values in gitignored Ansible files
 
 ## Repository Structure
 
@@ -77,7 +77,6 @@ proxmox-homelab/
 │   ├── 03-networking/    # Network, tunnel, firewall
 │   ├── 04-identity/      # LDAP, Authelia, OIDC
 │   ├── 05-services/      # Nginx, Gitea, Grafana, Prometheus
-│   ├── 07-monitoring/    # Prometheus, dashboards
 │   ├── 08-automation/    # Ansible
 │   └── 09-backups/       # Backup strategy
 ├── diagrams/             # Mermaid diagrams
