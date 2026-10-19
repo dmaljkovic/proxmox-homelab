@@ -70,13 +70,6 @@ ansible-playbook playbooks/site.yml --tags backup
 Retention and schedule are variable-driven in
 `inventory/group_vars/all/main.yml` (`backup_retention_days`, `backup_hour`).
 
-## Off-site copies (future)
-
-All backups currently live on the same SSD. A future improvement is a 2.5"
-SATA SSD mounted at a dedicated backup path, plus periodic copies off the host.
-Until then, the Proxmox images and the service backups together provide
-point-in-time recovery for accidental deletion and corruption.
-
 ## References
 
 - [Proxmox Backup and Restore](https://pve.proxmox.com/wiki/Backup_and_Restore)
