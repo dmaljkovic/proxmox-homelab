@@ -240,6 +240,82 @@ olcRootPW: {SSHA}NEW_HASH_HERE
 EOF
 ```
 
+### Adding a User (LDAP -> Authelia -> Gitea / Grafana)
+
+A single LDAP entry powers every service: Authelia authenticates against LDAP,
+Gitea auto-registers on first OIDC login (`--admin-group admins`), and Grafana
+maps group membership to a role through `ROLE_ATTRIBUTE_PATH`. No service config
+changes are required when onboarding someone.
+
+1. **Hash the password** (run interactively so the plaintext never enters
+   history; it prints a `{SSHA}...` hash):
+
+   ```bash
+   slappasswd
+   ```
+
+2. **Create the entry** — use the next free `uidNumber` and include `mail`,
+   which OIDC needs for the `email` claim:
+
+   ```bash
+   umask 077
+   HASH='{SSHA}PASTE_HASH_HERE'
+
+   cat > /root/user.ldif <<EOF
+   dn: uid=USER,ou=people,dc=example,dc=com
+   objectClass: inetOrgPerson
+   objectClass: posixAccount
+   objectClass: shadowAccount
+   uid: USER
+   cn: Full Name
+   sn: Last
+   displayName: Full Name
+   uidNumber: 1001
+   gidNumber: 1000
+   homeDirectory: /home/USER
+   loginShell: /bin/bash
+   mail: USER@example.com
+   userPassword: $HASH
+   EOF
+
+   ldapadd -x -H ldapi:/// -D "cn=admin,dc=example,dc=com" -W -f /root/user.ldif
+   shred -u /root/user.ldif
+   ```
+
+3. **Grant group membership** — this drives the Authelia access rules, Gitea
+   admin rights, and the Grafana role:
+
+   ```bash
+   ldapmodify -x -H ldapi:/// -D "cn=admin,dc=example,dc=com" -W <<'EOF'
+   dn: cn=admins,ou=groups,dc=example,dc=com
+   changetype: modify
+   add: memberUid
+   memberUid: USER
+   EOF
+   ```
+
+4. **Verify** — password bind, plus the exact filters Authelia uses:
+
+   ```bash
+   ldapwhoami -x -H ldapi:/// -D "uid=USER,ou=people,dc=example,dc=com" -W
+
+   ldapsearch -x -H ldapi:/// -D "cn=admin,dc=example,dc=com" -W \
+     -b "dc=example,dc=com" "(&(uid=USER)(objectClass=posixAccount))" uid mail
+
+   ldapsearch -x -H ldapi:/// -D "cn=admin,dc=example,dc=com" -W \
+     -b "dc=example,dc=com" "(&(memberUid=USER)(objectClass=posixGroup))" cn
+   ```
+
+5. **Finish in the browser**: sign in at the Authelia portal and register a TOTP
+   device (first login only), then log in to Gitea and Grafana via SSO. Gitea
+   creates the account automatically; membership in `admins` makes it a Gitea
+   administrator and a Grafana `Admin`.
+
+> **Writes need the root DN bind.** The SASL `EXTERNAL` peercred identity is only
+> authorized for `cn=config`, not for the data database, so `ldapadd`/`ldapmodify`
+> must bind as `cn=admin,dc=example,dc=com`.
+```
+
 ## Firewall
 
 ```bash
