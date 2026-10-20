@@ -3,22 +3,24 @@
   ansible.builtin.set_fact:
     node_exporter_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
 
-# check_mode: false — the tarball is a prerequisite for the extract task below,
+# /var/cache, not /tmp — a partial /tmp cleanup used to force a re-download and
+# re-extract on every run, because both artifacts lived in a volatile directory.
+- name: Ensure node_exporter cache directory
+  ansible.builtin.file:
+    path: /var/cache/node_exporter
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+# check_mode: false — the tarball is a prerequisite for the install task below,
 # which cannot be simulated in check mode.
 - name: Download node_exporter tarball
   ansible.builtin.get_url:
     url: >-
       https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-{{ node_exporter_arch }}.tar.gz
-    dest: "/tmp/node_exporter-{{ node_exporter_version }}.linux-{{ node_exporter_arch }}.tar.gz"
+    dest: "/var/cache/node_exporter/node_exporter-{{ node_exporter_version }}.linux-{{ node_exporter_arch }}.tar.gz"
     mode: "0644"
-  check_mode: false
-
-- name: Extract node_exporter
-  ansible.builtin.unarchive:
-    src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-{{ node_exporter_arch }}.tar.gz"
-    dest: /tmp
-    remote_src: true
-    creates: "/tmp/node_exporter-{{ node_exporter_version }}.linux-{{ node_exporter_arch }}/node_exporter"
   check_mode: false
 
 - name: Create node_exporter system user
@@ -28,15 +30,20 @@
     shell: /usr/sbin/nologin
     create_home: false
 
+# creates: anchors idempotency on the installed binary rather than on a
+# scratch directory, so a cleaned-up cache never causes a needless change.
 - name: Install node_exporter binary
-  ansible.builtin.copy:
-    src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-{{ node_exporter_arch }}/node_exporter"
-    dest: /usr/local/bin/node_exporter
+  ansible.builtin.unarchive:
+    src: "/var/cache/node_exporter/node_exporter-{{ node_exporter_version }}.linux-{{ node_exporter_arch }}.tar.gz"
+    dest: /usr/local/bin
     remote_src: true
     owner: root
     group: root
     mode: "0755"
+    extra_opts: [--strip-components=1]
+    creates: node_exporter
   notify: Restart node_exporter
+  check_mode: false
 
 - name: Deploy node_exporter systemd unit
   ansible.builtin.template:
