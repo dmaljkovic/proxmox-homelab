@@ -103,6 +103,18 @@
   loop: "{{ grafana_dashboards }}"
   notify: Restart grafana
 
+# Locally authored dashboards ship with the role and are version controlled, so
+# they are always overwritten (unlike the downloaded community ones).
+- name: Install locally authored dashboards
+  ansible.builtin.copy:
+    src: "dashboards/{{ item | basename }}"
+    dest: "/var/lib/grafana/dashboards/{{ item | basename }}"
+    owner: grafana
+    group: grafana
+    mode: "0644"
+  loop: "{{ query('fileglob', role_path ~ '/files/dashboards/*.json') | map('basename') | list }}"
+  notify: Restart grafana
+
 - name: Enable and start Grafana
   ansible.builtin.systemd:
     name: grafana-server

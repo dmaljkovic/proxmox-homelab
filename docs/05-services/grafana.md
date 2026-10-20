@@ -210,26 +210,63 @@ confirm dashboards render live data.
 
 ## Dashboards
 
-| Dashboard ID | Name | Provisioned file |
-|--------------|------|------------------|
-| 1860 | Node Exporter Full | `/var/lib/grafana/dashboards/node-exporter-full.json` |
-| 3662 | Prometheus 2.0 Overview | `/var/lib/grafana/dashboards/prometheus-overview.json` |
-| 12708 | NGINX exporter | `/var/lib/grafana/dashboards/nginx-exporter.json` |
-| 13192 | Gitea | `/var/lib/grafana/dashboards/gitea.json` |
+Everything is provisioned into the `Homelab` folder.
 
-Dashboards are provisioned by the Ansible [`grafana` role](../08-automation/ansible.md)
-from the `grafana_dashboards` list in `inventory/group_vars/all/main.yml`: each
-is downloaded from grafana.com into the scratch dir, any `${ds_*}` placeholder
-is rewritten to the `prometheus` datasource uid, and the patched file is
-installed into the provisioned path. The install uses `force: false`, so
-refreshes of the scratch copy never clobber an already-patched dashboard.
+| Source | Name | Provisioned file |
+|--------|------|------------------|
+| grafana.com 1860 | Node Exporter Full | `node-exporter-full.json` |
+| grafana.com 3662 | Prometheus 2.0 Overview | `prometheus-overview.json` |
+| grafana.com 12708 | NGINX exporter | `nginx-exporter.json` |
+| grafana.com 13192 | Gitea | `gitea.json` |
+| authored here | **Homelab — LXC Fleet** | `homelab-fleet.json` |
 
-To add another dashboard, append its ID to that list and re-run:
+All files land in `/var/lib/grafana/dashboards/`.
+
+### Homelab — LXC Fleet
+
+The dashboard built for this lab
+(`roles/grafana/files/dashboards/homelab-fleet.json`) answers "how is every box
+doing" on one screen. `node_exporter` runs on all six LXCs **and** the Proxmox
+host, so the `node` scrape job has seven targets.
+
+It shows CPU %, memory % and disk free as stat tiles (one per node), then memory
+used, CPU cores and uptime, followed by time series for CPU, memory, disk
+used/free, network I/O and load. The **Node** dropdown filters the whole
+dashboard.
+
+Panel queries join each metric against `node_uname_info` so the scrape target
+`10.0.0.x:9100` is replaced by the real hostname:
+
+```promql
+100 - (avg by (nodename) (
+  rate(node_cpu_seconds_total{job="node",mode="idle"}[$__rate_interval])
+  * on(instance) group_left(nodename) node_uname_info{job="node"}
+) * 100)
+```
+
+> **Why no table panel?** Grafana 13's Prometheus datasource returns one frame
+> per series with labels attached to the value field, so a multi-metric table
+> has no `nodename` column to render. Stat tiles and time series read the
+> `{{nodename}}` legend directly, which is why the dashboard uses those instead.
+
+### Adding a community dashboard
+
+Append the grafana.com dashboard ID to `grafana_dashboards` in
+`inventory/group_vars/all/main.yml`. The [`grafana` role](../08-automation/ansible.md)
+downloads it into a scratch dir, rewrites any `${ds_*}` placeholder to the
+`prometheus` datasource uid, then installs it with `force: false` so later
+refreshes never clobber the patched copy.
 
 ```bash
 cd ansible
 ansible-playbook playbooks/site.yml --limit grafana
 ```
+
+### Editing a locally authored dashboard
+
+Dashboards in `roles/grafana/files/dashboards/` are version controlled and
+copied with `force: true`, so edit the JSON and re-run the play — the change
+always lands.
 
 ## Backup
 

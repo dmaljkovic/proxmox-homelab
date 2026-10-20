@@ -60,3 +60,6 @@ dist/
 build/
 *.tar.gz
 *.zip
+
+# Handoff plan — real internal values, deliberately lives OUTSIDE the repo
+proxmox-homelab-plan*.md
