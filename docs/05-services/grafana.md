@@ -214,13 +214,21 @@ confirm dashboards render live data.
 |--------------|------|------------------|
 | 1860 | Node Exporter Full | `/var/lib/grafana/dashboards/node-exporter-full.json` |
 | 3662 | Prometheus 2.0 Overview | `/var/lib/grafana/dashboards/prometheus-overview.json` |
+| 12708 | NGINX exporter | `/var/lib/grafana/dashboards/nginx-exporter.json` |
+| 13192 | Gitea | `/var/lib/grafana/dashboards/gitea.json` |
 
-Download from grafana.com and adapt the datasource placeholder:
+Dashboards are provisioned by the Ansible [`grafana` role](../08-automation/ansible.md)
+from the `grafana_dashboards` list in `inventory/group_vars/all/main.yml`: each
+is downloaded from grafana.com into the scratch dir, any `${ds_*}` placeholder
+is rewritten to the `prometheus` datasource uid, and the patched file is
+installed into the provisioned path. The install uses `force: false`, so
+refreshes of the scratch copy never clobber an already-patched dashboard.
+
+To add another dashboard, append its ID to that list and re-run:
 
 ```bash
-curl -fsSL https://grafana.com/api/dashboards/1860/revisions/latest/download \
-  -o node-exporter-full.json
-# then replace "${ds_prometheus}" with "prometheus" and set "id": null
+cd ansible
+ansible-playbook playbooks/site.yml --limit grafana
 ```
 
 ## Backup

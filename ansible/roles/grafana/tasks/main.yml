@@ -77,9 +77,7 @@
     group: grafana
     mode: "0644"
   check_mode: false
-  loop:
-    - { id: 1860, file: node-exporter-full.json, placeholder: "\\$\\{ds_prometheus\\}" }
-    - { id: 3662, file: prometheus-overview.json, placeholder: "\\$\\{DS_THEMIS\\}" }
+  loop: "{{ grafana_dashboards }}"
 
 # force: false — only seed the provisioned dashboard on first install so later
 # refreshes of the scratch copy never clobber the patched file.
@@ -92,19 +90,17 @@
     group: grafana
     mode: "0644"
     force: false
-  loop:
-    - { id: 1860, file: node-exporter-full.json, placeholder: "\\$\\{ds_prometheus\\}" }
-    - { id: 3662, file: prometheus-overview.json, placeholder: "\\$\\{DS_THEMIS\\}" }
+  loop: "{{ grafana_dashboards }}"
   notify: Restart grafana
 
+# (?i) is case-insensitive so a single rule covers ${ds_prometheus},
+# ${DS_THEMIS} and ${DS_PROMETHEUS} alike.
 - name: Fix dashboard datasource placeholders
   ansible.builtin.replace:
     path: "/var/lib/grafana/dashboards/{{ item.file }}"
-    regexp: "{{ item.placeholder }}"
+    regexp: '(?i)\$\{ds_[^}]+\}'
     replace: "prometheus"
-  loop:
-    - { file: node-exporter-full.json, placeholder: "\\$\\{ds_prometheus\\}" }
-    - { file: prometheus-overview.json, placeholder: "\\$\\{DS_THEMIS\\}" }
+  loop: "{{ grafana_dashboards }}"
   notify: Restart grafana
 
 - name: Enable and start Grafana

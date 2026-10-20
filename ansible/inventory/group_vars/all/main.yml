@@ -21,6 +21,15 @@ prometheus_retention: "15d"
 
 grafana_repo_channel: stable
 
+# Community dashboards from grafana.com, downloaded into the scratch dir and
+# provisioned by the grafana role. Any ${ds_*} placeholder is rewritten to the
+# provisioned Prometheus datasource uid.
+grafana_dashboards:
+  - { id: 1860, file: node-exporter-full.json }
+  - { id: 3662, file: prometheus-overview.json }
+  - { id: 12708, file: nginx-exporter.json }
+  - { id: 13192, file: gitea.json }
+
 # --- backups ---
 backup_root: /var/lib/vz/backups
 backup_retention_days: 14
