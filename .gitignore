@@ -12,6 +12,9 @@ age.key
 cloudflared/
 *.json
 !configs/**/*.example.json
+# Locally authored Grafana dashboards are version controlled — the blanket
+# *.json rule above would otherwise silently drop them from the repo.
+!ansible/roles/grafana/files/dashboards/*.json
 
 # Ansible
 ansible/vault/
